@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# download boost
+#lucaceriani
+
 echo "Downloadgin Boost 1.74.0..."
 wget "https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.tar.gz"
 

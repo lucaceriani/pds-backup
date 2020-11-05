@@ -1,2 +1,3 @@
-# cartelle e file che iniziano con boost
+# cartelle e file che iniziano con boost e cpp-netlib
 boost*
+cpp-netlib*
