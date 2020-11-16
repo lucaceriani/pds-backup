@@ -1,4 +1,4 @@
-# Progetto PdS - Backup
+<img align="center" src="logo.png"></img>
 
 ## Definizione del protocollo
 
@@ -23,33 +23,41 @@ Il primo byte è sempre una M maiuscola, i successivi 3 sono il codice del messa
 I successivi 16 byte sono la codifica ASCII del numero, in base 10, di byte di lunghezza del body.
 
 ### Body
-Il body può essere di lunghezza variabile.
+Il body può essere di lunghezza variabile, ogni campo del body è codificato come ASCII a esclusione della parte file del  `021 - upload file` in cui il file stesso è inviato *raw*.
+
+Le virgole nelle tabelle successive devono essere interpretate come carattere nullo `0x00`.
+
+### Esempio
+Dopo essermi autenticato, voglio inviare un file da **123 byte** che si trova, nel client, nella cartella **./prova/abc.txt**.
+
+Il messaggio:
+
+
+
+
 
 ## Versione 1.00
 
 ### Client - Codici messaggio 
 
-| codice | significato |
-|-|-|
-| 010 | richiesta login |
-| 011 | invio credenziali |
-| 020 | probe file |
-| 021 | upload file |
-| 030 | cancella file |
-| 031 | cancella cartella |
+| codice | significato | body |
+|------- | ----------- | ---- |
+| 010 | richiesta login | (vuoto) |
+| 011 | invio credenziali | username, password |
+| 020 | probe file | percorso file, checksum |
+| 021 | upload file | percorso file, raw file |
+| 030 | cancella file | percorso file |
+| 031 | cancella cartella | percorso cartella |
 
 ### Server - Codici messaggio
 
 | codice | significato |
-|-|-|
+|------- | ----------- |
 | 100 | ok / procedi |
+| 101 | ok, con riserva (es. dopo richiesta cancellazione file inesistente) |
 | 200 | errore generico server |
-| 201 | credenziali non valide |
+| 201 | credenziali non valide / non autenticato |
 | 203 | impossibile caricare il file (es. spazio esaurito)  |
 | 204 | file non presente / checksum non corrispondente |
 | 210 | errore client / trasmissione errata / header errato |
 | 211 | versione protocollo incompatibile |
-
-
- 
-
