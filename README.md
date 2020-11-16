@@ -24,3 +24,32 @@ I successivi 16 byte sono la codifica ASCII del numero, in base 10, di byte di l
 
 ### Body
 Il body può essere di lunghezza variabile.
+
+## Versione 1.00
+
+### Client - Codici messaggio 
+
+| codice | significato |
+|-|-|
+| 010 | richiesta login |
+| 011 | invio credenziali |
+| 020 | probe file |
+| 021 | upload file |
+| 030 | cancella file |
+| 031 | cancella cartella |
+
+### Server - Codici messaggio
+
+| codice | significato |
+|-|-|
+| 100 | ok / procedi |
+| 200 | errore generico server |
+| 201 | credenziali non valide |
+| 203 | impossibile caricare il file (es. spazio esaurito)  |
+| 204 | file non presente / checksum non corrispondente |
+| 210 | errore client / trasmissione errata / header errato |
+| 211 | versione protocollo incompatibile |
+
+
+ 
+
