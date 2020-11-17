@@ -78,7 +78,8 @@ Le virgole nelle tabelle successive devono essere interpretate come carattere nu
 Dopo essermi autenticato, voglio inviare un file da **20 byte** che si trova, nel client, nella cartella **prova/abc.txt**. I byte totali saranno quindi 20 (file) + 13 (percorso file) + 1 (carattere nullo) = **34 byte**.
 
 **Il messaggio**:
-Dove `~` rappresenta il caratter nullo e `*` rappresentano i byte del file.
+
+in cui `~` rappresenta il caratter nullo e `*` rappresentano i byte del file.
 ```
 0100 M021    |
 0000 0000    |
