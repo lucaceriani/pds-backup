@@ -21,18 +21,20 @@ Il body può essere di lunghezza variabile, ogni campo del body è codificato co
 Le virgole nelle tabelle successive devono essere interpretate come carattere nullo `0x00`.
 
 ### Esempio
-Dopo essermi autenticato, voglio inviare un file da **123 byte** che si trova, nel client, nella cartella **prova/abc.txt**. I byte totali saranno quindi 123 + 13 (percorso file) + 1 (carattere nullo) = **137 byte**.
+Dopo essermi autenticato, voglio inviare un file da **20 byte** che si trova, nel client, nella cartella **prova/abc.txt**. I byte totali saranno quindi 20 (file) + 13 (percorso file) + 1 (carattere nullo) = **34 byte**.
 
-Il messaggio:
+**Il messaggio**:
+Dove `~` rappresenta il caratter nullo e `*` rappresentano i byte del file.
 ```
 0100 M021    |
 0000 0000    |
-0000 0137    |__ header
+0000 0034    |__ header
 
 prov a/ab    |
-c.tx t **    |
-*rawfile*    |
-*********    |__ body
+c.tx t~**    |
+**** ****    |
+**** ****    |
+**           |__ body
 ```
 
 
