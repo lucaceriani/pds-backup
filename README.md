@@ -53,12 +53,12 @@ c.tx t~**    |
 
 ### Server - Codici messaggio
 
-| codice | significato |
-|------- | ----------- |
-| 100 | ok / procedi |
-| 200 | errore generico server |
-| 201 | credenziali non valide / non autenticato |
-| 203 | impossibile caricare il file (es. spazio esaurito)  |
-| 204 | file non presente / checksum non corrispondente |
-| 210 | errore client / trasmissione errata / header errato |
-| 211 | versione protocollo incompatibile |
+| codice | significato | body |
+|------- | ----------- | ---- |
+| 100 | ok / procedi | (vuoto) |
+| 200 | errore generico server | (vuoto) |
+| 201 | credenziali non valide / non autenticato | (vuoto) |
+| 203 | impossibile caricare il file (es. spazio esaurito) | percorso file |
+| 204 | file non presente / checksum non corrispondente | percorso file |
+| 210 | errore client / trasmissione errata / header errato | (vuoto) |
+| 211 | versione protocollo incompatibile | (vuoto)
