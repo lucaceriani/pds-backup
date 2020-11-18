@@ -7,7 +7,7 @@ LIB    = -pthread -I boost/include
 SHARED = src/shared/*.cpp
 SRC    = src
 
-default: client server
+all: client server
 
 client:
 	$(CC) $(LIB) $(SRC)/client/*.cpp $(SHARED) -o client.out
