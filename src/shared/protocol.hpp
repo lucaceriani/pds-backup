@@ -1,13 +1,34 @@
-#ifndef SHARED_PROTOCOL_H
-#define SHARED_PROTOCOL_H
+#ifndef PDS_BACKUP_SHARED_PROTOCOL
+#define PDS_BACKUP_SHARED_PROTOCOL
 
-class MessageBuilder
+#include <string>
+#include <boost/asio.hpp>
+
+using boost::asio::ip::tcp;
+
+namespace PDSBackup
 {
-public:
-    // constants
 
+    class Protocol
+    {
+    private:
+        std::string header;
+        tcp::socket socket;
 
-private:
-}
+    public:
+        Protocol(tcp::socket s) : socket(std::move(s)) {}
 
-#endif // SHARED_PROTOCOL_H
+        // Legge l'header dal socket e lo mette dentro header
+        bool readHeader();
+        std::string stringHeader();
+
+        enum class Const
+        {
+            headerLenght = 40,
+            sepChar = 0,
+        };
+    };
+
+} // namespace PDSBackup
+
+#endif

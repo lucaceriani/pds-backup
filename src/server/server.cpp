@@ -15,6 +15,8 @@
 #include <string>
 #include <boost/asio.hpp>
 
+#include "../shared/protocol.hpp"
+
 using boost::asio::ip::tcp;
 
 class session : public std::enable_shared_from_this<session>
@@ -22,7 +24,10 @@ class session : public std::enable_shared_from_this<session>
 public:
     session(tcp::socket socket) : socket_(std::move(socket)) {}
 
-    void start() { do_read(); }
+    void start()
+    {
+        do_read();
+    }
 
 private:
     tcp::socket socket_;
@@ -37,14 +42,30 @@ private:
     void do_read()
     {
         auto self(shared_from_this());
-        socket_.async_read_some(boost::asio::buffer(data_, max_length), [this, self](boost::system::error_code ec, std::size_t length) {
-            if (!ec)
-            {
-                std::cout << "Received: " << data_ << std::endl;
-                std::cout << "From: " << socket_.remote_endpoint().address().to_string() << std::endl;
-                do_write(length);
-            }
-        });
+
+        // leggo l'header
+        PDSBackup::Protocol p(std::move(socket_));
+        if (!p.readHeader())
+        {
+            std::cout << "errore nella lettura dell'header" << std::endl;
+        }
+        else
+        {
+            std::cout << "header letto: " << p.stringHeader() << std::endl;
+        }
+
+        // socket_.async_read_some(boost::asio::buffer(data_, max_length), [this, self](boost::system::error_code ec, std::size_t length) {
+        //     if (!ec)
+        //     {
+
+        //         // creo l'oggetto per interfacciarmi con il protocollo
+        //         PDSBackup::Protocol p(soc);
+
+        //         std::cout << "Received: " << data_ << std::endl;
+        //         std::cout << "From: " << socket_.remote_endpoint().address().to_string() << std::endl;
+        //         std::cout << "check >>" << p.readHeader() << std::endl;
+        //     }
+        // });
     }
 
     void do_write(std::size_t length)

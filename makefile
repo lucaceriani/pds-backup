@@ -1,12 +1,17 @@
 MAKEFLAGS := --jobs=2
-
 .PHONY: client server
+
+
+CC     = g++
+LIB    = -pthread -I boost/include 
+SHARED = src/shared/*.cpp
+SRC    = src
 
 default: client server
 
 client:
-	g++ -pthread -I boost/include src/client/* -o client.out
+	$(CC) $(LIB) $(SRC)/client/*.cpp $(SHARED) -o client.out
 
 server:
-	g++ -pthread -I boost/include src/server/* -o server.out
+	$(CC) $(LIB) $(SRC)/server/*.cpp $(SHARED) -o server.out
 
