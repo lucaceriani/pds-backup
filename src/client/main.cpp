@@ -8,24 +8,18 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <boost/asio.hpp>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <boost/asio.hpp>
 
 using boost::asio::ip::tcp;
 
-enum
-{
-    max_length = 1024
-};
+enum { max_length = 1024 };
 
-int main(int argc, char *argv[])
-{
-    try
-    {
-        if (argc != 3)
-        {
+int main(int argc, char *argv[]) {
+    try {
+        if (argc != 3) {
             std::cerr << "Usage: blocking_tcp_echo_client <host> <port>\n";
             return 1;
         }
@@ -39,10 +33,13 @@ int main(int argc, char *argv[])
         tcp::socket s(io_service);
         s.connect(*iterator);
 
-        using namespace std; // For strlen.
-        std::cout << "Enter message: ";
-        char request[max_length];
-        std::cin.getline(request, max_length);
+        using namespace std;  // For strlen.
+        // std::cout << "Enter message: ";
+        // char request[max_length];
+        const char *request = "0001M123--------........--------........";
+        std::cout << "automessage" << std::endl;
+
+        // std::cin.getline(request, max_length);
         size_t request_length = strlen(request);
         boost::asio::write(s, boost::asio::buffer(request, request_length));
 
@@ -51,9 +48,7 @@ int main(int argc, char *argv[])
         std::cout << "Reply is: ";
         std::cout.write(reply, reply_length);
         std::cout << "\n";
-    }
-    catch (std::exception &e)
-    {
+    } catch (std::exception &e) {
         std::cerr << "Exception: " << e.what() << "\n";
     }
 
