@@ -4,10 +4,14 @@ MAKEFLAGS := --jobs=2
 
 CC     = g++
 LIB    = -pthread -I boost/include 
-SHARED = src/shared/*.cpp
+# SHARED = src/shared/*.cpp
 SRC    = src
 
+
 all: client server
+
+clean:
+	rm client.out server.out
 
 client:
 	$(CC) $(LIB) $(SRC)/client/*.cpp $(SHARED) -o client.out

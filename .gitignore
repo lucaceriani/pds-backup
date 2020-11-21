@@ -2,3 +2,4 @@
 boost*
 cpp-netlib*
 *.out
+.idea/
