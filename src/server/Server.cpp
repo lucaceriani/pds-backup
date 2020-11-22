@@ -2,8 +2,8 @@
 #include "Server.hpp"
 
 #include <boost/asio.hpp>
-#include <memory>
 #include <iostream>
+#include <memory>
 #include <string>
 
 using namespace PDSBackup;
