@@ -15,4 +15,7 @@ Makefile
 build/
 
 # altro
-__test.*
+
+# tutti i file che cominciano con doppio underscore
+# li usiamo come file di test
+__*

@@ -2,7 +2,9 @@
 #include "Session.hpp"
 
 #include <boost/asio.hpp>
-#include <iostream>
+#include <boost/bind.hpp>
+#include <cstdio>
+#include <fstream>
 #include <locale>
 #include <string>
 
@@ -10,45 +12,62 @@
 
 using namespace PDSBackup;
 
-bool Session::readHeader() {
+void Session::readHeader() {
     auto self(shared_from_this());
 
-    // /*
     boost::asio::async_read(
         socket, boost::asio::buffer(header, PDSB_PROT_HEADERLEN),
         [this, self](boost::system::error_code ec, std::size_t lenght) {
             if (!ec) {
                 std::cout << "Letto header: " << printLen(header, lenght) << std::endl;
-                unsigned long long l = checkHeader(lenght);
-                if (l != -1) {
+                bodyLen = checkHeader(lenght);
+                if (bodyLen != -1) {
                     std::cout << "Header corretto! " << std::endl;
                     std::cout << "Leggo il body... " << std::endl;
-                    readBody(l);
+                    readBody(bodyLen);
                 } else {
                     std::cout << "Header errato!" << std::endl;
                 }
             }
         });
-
-    // */
-    return true;
 }
 
 void Session::readBody(unsigned long long lenght) {
     auto self(shared_from_this());
 
-    boost::asio::async_read(
-        socket, boost::asio::buffer(body, lenght),
-        [this, self](boost::system::error_code ec, std::size_t readLen) {
-            if (!ec) {
-                std::cout << "Letto body: " << std::endl;
-                std::cout << ">> Lunghezza: " << readLen << " B" << std::endl;
+    // TODO: cambiare il nome del file
+    ofs.open("__t_received.jpg", std::ios::binary | std::ios::out);
 
-                for (unsigned long long i = 0; i < readLen; i++)
-                    std::cout << HEX(body[i]);
-            }
-            std::cout << std::endl;
-        });
+    socket.async_read_some(boost::asio::buffer(strBufBody, 8192),
+                           boost::bind(
+                               &Session::handleReadBody,
+                               self,
+                               boost::asio::placeholders::error,
+                               boost::asio::placeholders::bytes_transferred));
+}
+
+void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) {
+    if (!ec) {
+        // scrivo tutti i dati che sono riuscto a leggere
+        ofs.write(strBufBody, readLen);
+
+        std::cout << "handleReadBody(), con readLen = " << readLen << std::endl;
+
+        socket.async_read_some(boost::asio::buffer(strBufBody, 8192),
+                               boost::bind(
+                                   &Session::handleReadBody,
+                                   shared_from_this(),
+                                   boost::asio::placeholders::error,
+                                   boost::asio::placeholders::bytes_transferred));
+
+    } else if (ec == boost::asio::error::eof) {
+        ofs.close();
+        std::cout << "Letto tutto il file!" << std::endl;
+    } else {
+        ofs.close();
+        // TODO: cancellare il file
+        std::cout << "Errore: " << ec.message() << std::endl;
+    }
 }
 
 std::string Session::stringHeader() {
@@ -82,9 +101,9 @@ unsigned long long Session::checkHeader(std::size_t lenght /* implicito il passa
     return std::stoull(bodyLenght);
 }
 
-bool Session::doRead() {
-    // comincio la lettura
-    return readHeader();
+void Session::doRead() {
+    // comincio la lettura dall'header, si occupera' lui di far partire la lettura del body
+    readHeader();
 }
 
 std::string Session::printLen(char* s, unsigned long long len) {

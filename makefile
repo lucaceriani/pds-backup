@@ -16,9 +16,7 @@ clean:
 
 client:
 	$(CC) $(LIB) $(SRC)/client/*.cpp $(BOOST) -o client.out
-	./client.out 127.0.0.1 1234
 
 server:
 	$(CC) $(LIB) $(SRC)/server/*.cpp $(BOOST) -o server.out
-	./server.out 1234
 

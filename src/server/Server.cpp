@@ -20,8 +20,6 @@ void Server::doAccept() {
             std::make_shared<PDSBackup::Session>(std::move(socket))->doRead();
         }
 
-        std::cout << "Fine acceptor" << std::endl;
-
         // per restare in attesa di un'altra connessione
         doAccept();
     });
