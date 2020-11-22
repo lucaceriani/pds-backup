@@ -2,8 +2,8 @@
 #include "Server.hpp"
 
 #include <boost/asio.hpp>
-#include <memory>
 #include <iostream>
+#include <memory>
 #include <string>
 
 using namespace PDSBackup;
@@ -19,6 +19,8 @@ void Server::doAccept() {
             std::cout << "Nuova connessione da: " << socket.remote_endpoint().address().to_string() << std::endl;
             std::make_shared<PDSBackup::Session>(std::move(socket))->doRead();
         }
+
+        std::cout << "Fine acceptor" << std::endl;
 
         // per restare in attesa di un'altra connessione
         doAccept();

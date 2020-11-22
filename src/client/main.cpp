@@ -9,8 +9,11 @@
 //
 
 #include <boost/asio.hpp>
+#include <boost/filesystem.hpp>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 
 using boost::asio::ip::tcp;
@@ -26,6 +29,17 @@ int main(int argc, char *argv[]) {
 
         boost::asio::io_service io_service;
 
+        tcp::iostream sockstream(tcp::resolver::query{argv[1], argv[2]});
+
+        std::ifstream ifs("./__test.jpg", std::ios::binary);
+
+        sockstream << "0001M123";
+        sockstream << "abcdefghabcdefgh";
+        sockstream << std::setfill('0') << std::setw(16) << boost::filesystem::file_size("./__test.jpg");
+        sockstream << ifs.rdbuf();
+        sockstream.flush();
+
+        /*
         tcp::resolver resolver(io_service);
         tcp::resolver::query query(tcp::v4(), argv[1], argv[2]);
         tcp::resolver::iterator iterator = resolver.resolve(query);
@@ -36,7 +50,7 @@ int main(int argc, char *argv[]) {
         using namespace std;  // For strlen.
         // std::cout << "Enter message: ";
         // char request[max_length];
-        const char *request = "0001M123--------........--------........";
+        const char *request = "0001M12300000000111111112222222233333333";
         std::cout << "automessage" << std::endl;
 
         // std::cin.getline(request, max_length);
@@ -48,6 +62,8 @@ int main(int argc, char *argv[]) {
         std::cout << "Reply is: ";
         std::cout.write(reply, reply_length);
         std::cout << "\n";
+        */
+
     } catch (std::exception &e) {
         std::cerr << "Exception: " << e.what() << "\n";
     }

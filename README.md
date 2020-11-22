@@ -42,7 +42,9 @@ ultimi due la versione minore.
 I **successivi 4 byte** rappresentano il tipo di messaggio scambiato.
 Il primo byte è sempre una M maiuscola, i successivi 3 sono il codice del messaggio, che molto vagamente vogliono ricordare i codici HTTP.
 
-I **successivi 16 byte** sono la codifica ASCII del numero, in base 10, di byte di lunghezza del body.
+I **successivi 16 byte** sono il codice utente utilizzato come cookie per la connessione. I caratteri ASCII utilizzati sono tutti quelli stampabili escluso lo spazio: da `! = 0x21` fino a `~ = 0x7e`. Si creano un questo modo 94^16, ovvero circa 10^30 combinazioni.
+
+Gli  **ultimi 16 byte** sono la codifica ASCII del numero, in base 10, di byte di lunghezza del body.
 
 ## Body
 Il body può essere di lunghezza variabile, ogni campo del body è codificato come ASCII a esclusione della parte file del  `021 - upload file` in cui il file stesso è inviato *raw*.
@@ -81,14 +83,19 @@ Dopo essermi autenticato, voglio inviare un file da **20 byte** che si trova, ne
 
 in cui `~` rappresenta il caratter nullo e `*` rappresentano i byte del file.
 ```
-0100 M021    |
-0000 0000    |
-0000 0034    |__ header
+           header
+0100 M021    | 
+aFr! hJ^8    | < user code
+us3r c0de    | 
+0000 0000    | < body lenght
+0000 0034    |
+             V
 
+            body
 prov a/ab    |
 c.tx t~**    |
 **** ****    |
 **** ****    |
-**           |__ body
+**           |
 ```
 
