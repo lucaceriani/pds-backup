@@ -15,6 +15,7 @@ class Protocol {
     static char messageChar() { return 'M'; }
     // lenghts
     static int headerLenght() { return 48; }
+    static int headerBodyLenght() { return 16; }
     static int sessionIdLenght() { return 24; }
     // offsets
     static int sessionIdOffset() { return 8; }
