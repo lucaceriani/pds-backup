@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         std::ifstream ifs("./__test.jpg", std::ios::binary);
 
         sockstream << "0001M123";
-        sockstream << "abcdefghabcdefgh";
+        sockstream << "aaaabbbbccccddddeeeeffff";
         sockstream << std::setfill('0') << std::setw(16) << boost::filesystem::file_size("./__test.jpg");
         sockstream << ifs.rdbuf();
         sockstream.flush();
