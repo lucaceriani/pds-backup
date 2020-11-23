@@ -1,5 +1,6 @@
 #ifndef PDS_BACKUP_SHARED_PROTOCOL
 #define PDS_BACKUP_SHARED_PROTOCOL
+
 #include <string>
 #include <vector>
 
@@ -13,14 +14,14 @@ class Protocol {
     static char separationChar() { return '\0'; }
     static char messageChar() { return 'M'; }
     // lenghts
-    static int headerLenght() { return 40; }
-    static int sessionIdLenght() { return 16; }
+    static int headerLenght() { return 48; }
+    static int sessionIdLenght() { return 24; }
     // offsets
     static int sessionIdOffset() { return 8; }
-    static int bodyLenghtOffset() { return 24; }
+    static int bodyLenghtOffset() { return 32; }
 
-    static unsigned long long
-    parseHeader(std::size_t readLen, std::vector<char>& header, std::string& sessionId);
+    static unsigned long long parseHeader(std::size_t readLen, std::vector<char>& header, std::string& sessionId);
+    static unsigned long long parseBody();
 };
 
 }  // namespace PDSBackup
