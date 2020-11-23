@@ -2,10 +2,10 @@ MAKEFLAGS := --jobs=2
 .PHONY: client server
 
 
-CC     = g++ 
+CC     = g++ -std=c++17
 LIB    = -pthread -static
 SHARED = src/shared/*.cpp
-BOOST = -Lboost/lib -lboost_system -lboost_filesystem
+BOOST  = -Lboost/lib -lboost_system -lboost_filesystem
 SRC    = src
 
 
