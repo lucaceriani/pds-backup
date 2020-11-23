@@ -41,8 +41,9 @@ class Session : public std::enable_shared_from_this<Session> {
     // Legge il body
     void readBody(unsigned long long lenght);
 
+    /** @todo Controllare che la lunghezza totale del file sia corretta
+     */
     // Si occupa di leggere il body finché non ha finito
-    // @todo Controllare che la lunghezza totale del file sia corretta
     void handleReadBody(boost::system::error_code ec, std::size_t readLen);
 
     // Funzione chiamata dopo aver letto correttamente l'header
