@@ -21,8 +21,8 @@ namespace PDSBackup {
 class Session : public std::enable_shared_from_this<Session> {
    public:
     Session(tcp::socket s) : socket(std::move(s)) {
-        // riservo lo spazio per i buffer
-        header.reserve(Protocol::headerLenght());
+        // inizializzo l'header
+        header.resize(Protocol::headerLenght());
     }
 
     // Metodo da hciamare per cominciare la lettura

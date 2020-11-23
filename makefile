@@ -3,7 +3,7 @@ MAKEFLAGS := --jobs=2
 
 
 CC     = g++ 
-LIB    = -pthread -static #-Iboost/include -Lboost/lib -lboost_system -lboost_filesystem
+LIB    = -pthread -static
 SHARED = src/shared/*.cpp
 BOOST = -Lboost/lib -lboost_system -lboost_filesystem
 SRC    = src
@@ -15,8 +15,8 @@ clean:
 	rm client.out server.out
 
 client:
-	$(CC) $(LIB) $(SRC)/client/*.cpp $(BOOST) -o client.out
+	$(CC) $(LIB) $(SHARED) $(SRC)/client/*.cpp $(BOOST) -o client.out
 
 server:
-	$(CC) $(LIB) $(SRC)/server/*.cpp $(BOOST) -o server.out
+	$(CC) $(LIB) $(SHARED) $(SRC)/server/*.cpp $(BOOST) -o server.out
 

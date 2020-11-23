@@ -10,10 +10,11 @@ class Protocol {
     // ---  Protocol constants ---
     // generic
     static std::string currentVersion() { return "0001"; }
-    static int headerLenght() { return 40; }
-    static int sessionIdLenght() { return 16; }
     static char separationChar() { return '\0'; }
     static char messageChar() { return 'M'; }
+    // lenghts
+    static int headerLenght() { return 40; }
+    static int sessionIdLenght() { return 16; }
     // offsets
     static int sessionIdOffset() { return 8; }
     static int bodyLenghtOffset() { return 24; }

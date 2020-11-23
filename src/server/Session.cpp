@@ -21,6 +21,7 @@ void Session::readHeader() {
         [this, self](boost::system::error_code ec, std::size_t readLen) {
             if (!ec) {
                 std::cout << "Letto header: " << printLen(header, readLen) << std::endl;
+                std::cout << "Lunghezza: " << readLen << std::endl;
 
                 bodyLen = Protocol::parseHeader(readLen, header, sessionId);
 
@@ -85,5 +86,5 @@ void Session::doRead() {
 }
 
 std::string Session::printLen(std::vector<char> s, unsigned long long len) {
-    return std::string(s.data(), s.data() + len);
+    return std::string(s.begin(), s.end());
 }
