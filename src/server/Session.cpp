@@ -35,7 +35,7 @@ void Session::readHeader() {
 void Session::readBody(unsigned long long lenght) {
     auto self(shared_from_this());
 
-    // TODO: cambiare il nome del file
+    // @todo cambiare il nome del file, in quello fornito nel body
     ofs.open("__t_received.jpg", std::ios::binary | std::ios::out);
 
     socket.async_read_some(boost::asio::buffer(strBufBody, 8192),
@@ -46,6 +46,8 @@ void Session::readBody(unsigned long long lenght) {
                                boost::asio::placeholders::bytes_transferred));
 }
 
+// @todo modificare l'handling del body
+// @body In modo da capire i vari campi a seconda dell'header
 void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) {
     if (!ec) {
         // scrivo tutti i dati che sono riuscto a leggere
@@ -65,7 +67,7 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
         std::cout << "Letto tutto il file!" << std::endl;
     } else {
         ofs.close();
-        // TODO: cancellare il file
+        // @todo In caso di errore cancellare il file
         std::cout << "Errore: " << ec.message() << std::endl;
     }
 }
