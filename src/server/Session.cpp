@@ -8,7 +8,7 @@
 #include <locale>
 #include <string>
 
-#include "../shared/protocol.hpp"
+#include "../shared/Protocol.hpp"
 
 using namespace PDSBackup;
 
@@ -16,11 +16,14 @@ void Session::readHeader() {
     auto self(shared_from_this());
 
     boost::asio::async_read(
-        socket, boost::asio::buffer(header, PDSB_PROT_HEADERLEN),
-        [this, self](boost::system::error_code ec, std::size_t lenght) {
+        socket,
+        boost::asio::buffer(header, Protocol::headerLenght()),
+        [this, self](boost::system::error_code ec, std::size_t readLen) {
             if (!ec) {
-                std::cout << "Letto header: " << printLen(header, lenght) << std::endl;
-                bodyLen = checkHeader(lenght);
+                std::cout << "Letto header: " << printLen(header, readLen) << std::endl;
+
+                bodyLen = Protocol::parseHeader(readLen, header, sessionId);
+
                 if (bodyLen != -1) {
                     std::cout << "Header corretto! " << std::endl;
                     std::cout << "Leggo il body... " << std::endl;
@@ -35,9 +38,7 @@ void Session::readHeader() {
 void Session::readBody(unsigned long long lenght) {
     auto self(shared_from_this());
 
-    /**
-     * @todo Cambiare il nome del file in quello fornito nel body
-     */
+    // TODO: cambiare il nome del file
     ofs.open("__t_received.jpg", std::ios::binary | std::ios::out);
 
     socket.async_read_some(boost::asio::buffer(strBufBody, 8192),
@@ -48,10 +49,7 @@ void Session::readBody(unsigned long long lenght) {
                                boost::asio::placeholders::bytes_transferred));
 }
 
-/**
-  * @todo modificare l'handling del body
-  * @body In modo da capire i vari campi a seconda dell'header
-  */
+// TODO: modificare il body in modo da leggere tutti i campi in base all'header
 void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) {
     if (!ec) {
         // scrivo tutti i dati che sono riuscto a leggere
@@ -71,42 +69,14 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
         std::cout << "Letto tutto il file!" << std::endl;
     } else {
         ofs.close();
-        /**
-         * @todo In caso di errore cancellare il file
-         */
+        // TODO: cancellare il file
         std::cout << "Errore: " << ec.message() << std::endl;
     }
 }
 
 std::string Session::stringHeader() {
     // ritorno l'header come stringa
-    return std::string(header);
-}
-
-// Ritorna -1 (0xFF...FF) in caso di errore altrimenti ritorna la dimensione del body
-unsigned long long Session::checkHeader(std::size_t lenght /* implicito il passaggio dell'header */) {
-    // controllo byte letti
-    if (lenght != PDSB_PROT_HEADERLEN) return -1;
-
-    // controllo lettera M
-    if (header[4] != 'M') return -1;
-
-    // controllo versione del protocollo
-    for (int i = 0; i < 4; i++)
-        if (header[i] != PDSB_PROT_CURRVERSION[i]) return -1;
-
-    // controllo che tutti i caratteri successivi siano effettivamente cifre
-    std::string bodyLenght;
-
-    for (int i = 0; i < 16; i++) {
-        if (!std::isdigit(header[PDSB_PROT_BODYLEN_OFFSET]))
-            return -1;
-
-        userCode.push_back(header[i + PDSB_PROT_USERCODE_OFFSET]);
-        bodyLenght.push_back(header[i + PDSB_PROT_BODYLEN_OFFSET]);
-    }
-
-    return std::stoull(bodyLenght);
+    return std::string(header.data());
 }
 
 void Session::doRead() {
@@ -114,6 +84,6 @@ void Session::doRead() {
     readHeader();
 }
 
-std::string Session::printLen(char* s, unsigned long long len) {
-    return std::string(s).substr(0, len);
+std::string Session::printLen(std::vector<char> s, unsigned long long len) {
+    return std::string(s.data(), s.data() + len);
 }

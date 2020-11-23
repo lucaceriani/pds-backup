@@ -49,7 +49,7 @@ Gli  **ultimi 16 byte** sono la codifica ASCII del numero, in base 10, di byte d
 ## Body
 Il body può essere di lunghezza variabile, ogni campo del body è codificato come ASCII a esclusione della parte file del  `021 - upload file` in cui il file stesso è inviato *raw*.
 
-Le virgole nelle tabelle successive devono essere interpretate come carattere nullo `0x00`.
+Le virgole `,` nelle tabelle successive devono essere interpretate come carattere nullo `0x00`.
 
 ## Codici del messaggio
 
