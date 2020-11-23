@@ -88,20 +88,20 @@ Le virgole `,` nelle tabelle successive devono essere interpretate come caratter
 | 211 | versione protocollo incompatibile | (vuoto)
 
 ## Esempio
-Dopo essermi autenticato, voglio inviare un file da **20 byte** che si trova, nel client, nella cartella **prova/abc.txt**. I byte totali saranno quindi 20 (file) + 13 (percorso file) + 1 (carattere nullo) = **34 byte**.
+Dopo essermi autenticato, ho ottenuto l'ID di sessione `TkZ1Q-ILbbN25UKGMy5BUVzl_7`, voglio inviare un file da **20 byte** che si trova, nel client, nella cartella **prova/abc.txt**. I byte totali del body saranno quindi 20 (file) + 13 (percorso file) + 1 (carattere nullo) = **34 byte**.
 
 **Il messaggio**:
 
 in cui `~` rappresenta il caratter nullo e `*` rappresentano i byte del file.
 ```
            header
-0100 M021    | 
-aFr! hJ^8    | < user code
-us3r c0de    | 
-0000 0000    | < body lenght
-0000 0034    |
-             V
-
+0001 M021    | 0
+TkZ1 Q-ILb   | 8   << id sessione
+bN25 UKGMy   |16 
+5BUV zl_7    |24
+0000 0000    |32   << lunghezza body
+0000 0034    |40
+             |
             body
 prov a/ab    |
 c.tx t~**    |
