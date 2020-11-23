@@ -32,17 +32,28 @@ Chi è la **SOOT**?
 # Protocollo
 
 ## Header
-L'header è lungo 40 byte. La codifica dell'header è di tipo ASCII, non è binario.
+L'header è lungo **48 byte**. La codifica dell'header è di tipo ASCII, non è binario.
 
+#### [0-3] Versione
 I **primi 4 byte** indicano la versione del protocollo, di cui i primi due la versione maggiore e gli 
 ultimi due la versione minore. 
 
 > Ad esempio `0123` rappresenta la versione 1.23 e `0100` rappresenta la versione 1.00.
 
-I **successivi 4 byte** rappresentano il tipo di messaggio scambiato.
-Il primo byte è sempre una M maiuscola, i successivi 3 sono il codice del messaggio, che molto vagamente vogliono ricordare i codici HTTP.
+#### [4-7] Codice messaggio
 
-I **successivi 16 byte** sono il codice utente utilizzato come cookie per la connessione. I caratteri ASCII utilizzati sono tutti quelli stampabili escluso lo spazio: da `! = 0x21` fino a `~ = 0x7e`. Si creano un questo modo 94^16, ovvero circa 10^30 combinazioni.
+I **successivi 4 byte** rappresentano il tipo di messaggio scambiato.
+Il primo byte è sempre una `M` maiuscola, i successivi 3 sono il codice del messaggio, che molto vagamente vogliono ricordare i codici HTTP.
+
+#### [8-31] ID di sessione
+
+I **successivi 24 byte** sono l'ID della sessione utilizzato come cookie per il riconoscimento di un utente già loggato. I caratteri ASCII utilizzati sono quelli della codifica `base64url`, ovvero tutte le lettere dell'alfabeto, maiuscole e minuscole, le dieci cifre e i caratteri `-` e `_`.
+
+Così facendo ci si allinea quantomeno alle *best practices* dell'OWASP, consultabili a [questo link](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#session-id-length) in cui si consiglia di utilizzare al minimo una lunghezza pari a 128bit (64 bit di entropia), ovvero con 2^128 ~ 10^38 possibili combinazioni.
+
+In questo protocollo si usano 24 caratteri con 64 combinazioni ciascuno, ovvero 64^24 ~ 10^43.
+
+#### [32-47] Lunghezza del body
 
 Gli  **ultimi 16 byte** sono la codifica ASCII del numero, in base 10, di byte di lunghezza del body.
 
