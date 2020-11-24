@@ -10,16 +10,16 @@ class Protocol {
    public:
     // ---  Protocol constants ---
     // generic
-    static std::string currentVersion() { return "0001"; }
-    static char separationChar() { return '\0'; }
-    static char messageChar() { return 'M'; }
+    static const std::string currentVersion;
+    static const char separationChar;
+    static const char messageChar;
     // lenghts
-    static int headerLenght() { return 48; }
-    static int headerBodyLenght() { return 16; }
-    static int sessionIdLenght() { return 24; }
+    static const int headerLenght;
+    static const int headerBodyLenght;
+    static const int sessionIdLenght;
     // offsets
-    static int sessionIdOffset() { return 8; }
-    static int bodyLenghtOffset() { return 32; }
+    static const int sessionIdOffset;
+    static const int bodyLenghtOffset;
 
     static unsigned long long parseHeader(std::size_t readLen, std::vector<char>& header, std::string& sessionId);
     static unsigned long long parseBody();
