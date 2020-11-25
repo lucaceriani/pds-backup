@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "../shared/Protocol.hpp"
+#include "../shared/_include.hpp"
 
 // per stampare i char come hex
 #define HEX(x) std::setw(2) << std::setfill('0') << std::hex << (((int)(x)) & 0xff)
@@ -21,21 +21,21 @@ namespace PDSBackup {
 class Session : public std::enable_shared_from_this<Session> {
    public:
     Session(tcp::socket s) : socket(std::move(s)) {
-        // inizializzo l'header
-        header.resize(Protocol::headerLenght());
+        // inizializzo i vettori
+        rawHeader.resize(Protocol::headerLenght);
+        strBufBody.resize(Protocol::bufferSize);
     }
 
     // Metodo da hciamare per cominciare la lettura
     void doRead();
 
-    // Ritorna l'header come stringa
-    std::string stringHeader();
-
    private:
-    std::vector<char> header;
-    char strBufBody[8192];
-    unsigned long long bodyLen;
-    std::string sessionId;
+    Header header;
+    Body body;
+
+    std::vector<char> rawHeader;
+    std::vector<char> strBufBody;
+
     tcp::socket socket;
     std::ofstream ofs;
 
@@ -43,10 +43,10 @@ class Session : public std::enable_shared_from_this<Session> {
     void readHeader();
 
     // Legge il body
-    void readBody(unsigned long long lenght);
+    void readBody();
 
     // Si occupa di leggere il body finché non ha finito
-    // TODO: controllo della lunghezza del body!
+    // TODO controllo della lunghezza del body!
     void handleReadBody(boost::system::error_code ec, std::size_t readLen);
 
     // Funzione chiamata dopo aver letto correttamente l'header
