@@ -6,25 +6,46 @@
 
 namespace PDSBackup {
 
+// per poter essere vista da protocol
+class Body;
+
 class Protocol {
    public:
     // ---  Protocol constants ---
-    // generic
     static const std::string currentVersion;
     static const char separationChar;
     static const char messageChar;
-    // lenghts
+    static const int maxBodyFields;
+    static const int messageCodeLenght;
+    static const int versionLenght;
+    static const int bufferSize;
     static const int headerLenght;
     static const int headerBodyLenght;
     static const int sessionIdLenght;
-    // offsets
     static const int sessionIdOffset;
     static const int bodyLenghtOffset;
+    static const int messageCharOffset;
+    static const int messageCodeOffset;
 
-    static unsigned long long parseHeader(std::size_t readLen, std::vector<char>& header, std::string& sessionId);
-    static unsigned long long parseBody();
+    enum class MessageCodes {
+        // client
+        loginRequest = 10,
+        loginCredentials = 11,
+        fileProbe = 20,
+        fileUpload = 21,
+        fileDelete = 30,
+        folderDelete = 31,
+
+        // server
+        ok = 100,
+        errorGeneric = 200,
+        errorLogin = 201,
+        errorFailedUpload = 203,
+        errorFileNotFound = 204,
+        errorTransmission = 210,
+        errorProtocol = 211
+    };
 };
 
 }  // namespace PDSBackup
-
 #endif
