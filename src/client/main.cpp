@@ -21,10 +21,17 @@ int main(int argc, char *argv[]) {
 
         std::ifstream ifs("./__test.jpg", std::ios::binary);
 
+        std::string msg = "Questo e' il messaggio che vogio inviare";
+        std::string msg2 = "Il secondo campo e' anche piu' lungo del primo";
+
         sockstream << "0001M123";
         sockstream << "aaaabbbbccccddddeeeeffff";
-        sockstream << std::setfill('0') << std::setw(16) << boost::filesystem::file_size("./__test.jpg");
-        sockstream << ifs.rdbuf();
+        sockstream << std::setfill('0') << std::setw(16) << msg.length() + msg2.length() + 1;
+        sockstream << msg;
+        sockstream << '\0';
+        sockstream << msg2;
+        // sockstream << std::setfill('0') << std::setw(16) << boost::filesystem::file_size("./__test.jpg");
+        // sockstream << ifs.rdbuf();
         sockstream.flush();
 
         /*

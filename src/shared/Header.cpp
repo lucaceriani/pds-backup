@@ -2,14 +2,28 @@
 
 #include <iostream>
 
-#include "Protocol.hpp"
-
 using namespace PDSBackup;
 
 // Inizializzo la variabile di validita' a false
 Header::Header() : valid(false) {}
 
-bool Header::parseHeader(std::vector<char> rawHeader) {
+bool Header::isFileUpload() {
+    return messageCode == Protocol::MessageCode::fileUpload;
+}
+
+unsigned long long Header::getBodyLenght() {
+    return bodyLenght;
+}
+
+std::string Header::getSessionId() {
+    return sessionId;
+}
+
+bool Header::isValid() {
+    return valid;
+}
+
+bool Header::parse(std::vector<char> rawHeader) {
     // imposto il valore di valid a false, in caso si dovesse chiamare piu' volte
     valid = false;
 
@@ -28,7 +42,7 @@ bool Header::parseHeader(std::vector<char> rawHeader) {
     }
 
     try {
-        messageCode = std::stoi(messageCodeStr);
+        messageCode = (Protocol::MessageCode)std::stoi(messageCodeStr);
     } catch (const std::exception& e) {
         // se fallisco la conversione
         std::cerr << e.what() << std::endl;

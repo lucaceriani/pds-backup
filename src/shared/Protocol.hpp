@@ -27,7 +27,7 @@ class Protocol {
     static const int messageCharOffset;
     static const int messageCodeOffset;
 
-    enum class MessageCodes {
+    enum class MessageCode {
         // client
         loginRequest = 10,
         loginCredentials = 11,

@@ -4,20 +4,23 @@
 #include <string>
 #include <vector>
 
+#include "Protocol.hpp"
+
 namespace PDSBackup {
 
 class Header {
    public:
-    bool parseHeader(std::vector<char> rawHeader);
+    Header();
+    bool isFileUpload();
+    bool parse(std::vector<char> rawHeader);
     bool isValid();
     std::string getSessionId();
-    int mgetMessageCode();
     unsigned long long getBodyLenght();
 
    private:
     bool valid;
     std::string sessionId;
-    int messageCode;
+    Protocol::MessageCode messageCode;
     unsigned long long bodyLenght;
 };
 

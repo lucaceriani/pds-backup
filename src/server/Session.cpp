@@ -20,12 +20,18 @@ void Session::readHeader() {
                 std::cout << "Letto header: " << printLen(rawHeader, readLen) << std::endl;
                 std::cout << "Lunghezza: " << readLen << std::endl;
 
-                if (header.parseHeader(rawHeader)) {
+                if (header.parse(rawHeader)) {
                     std::cout << "Header corretto! " << std::endl;
                     std::cout << "Leggo il body... " << std::endl;
+
+                    // importante
+                    body.setHeader(header);
+
+                    // parto a leggere il body
                     readBody();
                 } else {
                     std::cout << "Header errato!" << std::endl;
+                    // TODO inviare errore appropriato per header errato
                 }
             }
         });
@@ -33,9 +39,9 @@ void Session::readHeader() {
 
 void Session::readBody() {
     // TODO: cambiare il nome del file
-    if (!ofs.is_open()) {
-        ofs.open("__t_received.jpg", std::ios::binary | std::ios::out);
-    }
+    // if (!ofs.is_open()) {
+    //     ofs.open("__t_received.jpg", std::ios::binary | std::ios::out);
+    // }
 
     socket.async_read_some(boost::asio::buffer(strBufBody, 8192),
                            boost::bind(
@@ -49,17 +55,30 @@ void Session::readBody() {
 void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) {
     if (!ec) {
         // scrivo tutti i dati che sono riuscto a leggere
-        ofs.write(strBufBody.data(), readLen);
-
+        // ofs.write(strBufBody.data(), readLen);
         std::cout << "handleReadBody(), con readLen = " << readLen << std::endl;
 
+        // pusho il contenuto del body
+        body.push(strBufBody, readLen);
+
+        // chiamata per continuare a legger il body
         readBody();
 
     } else if (ec == boost::asio::error::eof) {
-        ofs.close();
-        std::cout << "Letto tutto il file!" << std::endl;
+        // pusho il contenuto del body per l'ultima volta
+        body.push(strBufBody, readLen);
+
+        // parsifico il body
+        body.parse();
+
+        std::vector<std::string> ciao = body.getFields();
+
+        for (auto x : ciao) {
+            std::cout << "Letto field: " << x << std::endl;
+        }
+
+        std::cout << "Letto tutto il messaggio!" << std::endl;
     } else {
-        ofs.close();
         // TODO: cancellare il file
         std::cout << "Errore: " << ec.message() << std::endl;
     }
