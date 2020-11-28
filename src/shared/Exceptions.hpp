@@ -11,40 +11,43 @@
 
 namespace PDSBackup {
 
-class Exception {
+class BaseException {
     virtual const char* what();
     virtual Protocol::MessageCode messageCode();
 };
 
-class generic : public Exception {
+namespace Exception {
+
+class generic : public BaseException {
     const char* what();
     Protocol::MessageCode messageCode();
 };
 
-class invalidLogin : public Exception {
+class invalidLogin : public BaseException {
     const char* what();
     Protocol::MessageCode messageCode();
 };
 
-class invalidFileUpload : public Exception {
+class invalidFileUpload : public BaseException {
     const char* what();
     Protocol::MessageCode messageCode();
 };
 
-class invalidFile : public Exception {
+class invalidFile : public BaseException {
     const char* what();
     Protocol::MessageCode messageCode();
 };
 
-class invalidTransmission : public Exception {
+class invalidTransmission : public BaseException {
     const char* what();
     Protocol::MessageCode messageCode();
 };
 
-class invalidProtocol : public Exception {
+class invalidProtocol : public BaseException {
     const char* what();
     Protocol::MessageCode messageCode();
 };
+}  // namespace Exception
 
 }  // namespace PDSBackup
 

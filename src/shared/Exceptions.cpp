@@ -1,6 +1,9 @@
 #include "Exceptions.hpp"
 
+#include "Protocol.hpp"
+
 using namespace PDSBackup;
+using namespace PDSBackup::Exception;
 
 const char* generic::what() { return "Errore generico server"; }
 Protocol::MessageCode generic::messageCode() { return Protocol::MessageCode::errorGeneric; }
