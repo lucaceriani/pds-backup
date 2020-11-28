@@ -9,6 +9,15 @@
 
 using namespace PDSBackup;
 
+Session::Session(tcp::socket s) : socket(std::move(s)) {
+    // TODO da cancellare
+    throw Exception::generic();
+
+    // inizializzo i vettori
+    rawHeader.resize(Protocol::headerLenght);
+    strBufBody.resize(Protocol::bufferSize);
+}
+
 void Session::readHeader() {
     auto self(shared_from_this());
 
