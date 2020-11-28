@@ -21,6 +21,9 @@ namespace PDSBackup {
 class Session : public std::enable_shared_from_this<Session> {
    public:
     Session(tcp::socket s) : socket(std::move(s)) {
+        // TODO da cancellare
+        throw Exception::generic();
+
         // inizializzo i vettori
         rawHeader.resize(Protocol::headerLenght);
         strBufBody.resize(Protocol::bufferSize);
