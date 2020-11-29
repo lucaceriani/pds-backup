@@ -1,9 +1,9 @@
-#ifndef PDS_BACKUP_SHARED_BODY
-#define PDS_BACKUP_SHARED_BODY
+#pragma once
 
 #include <string>
 #include <vector>
 
+#include "Exceptions.hpp"
 #include "Header.hpp"
 #include "Protocol.hpp"
 
@@ -30,5 +30,3 @@ class Body {
     bool parseWithBody(std::vector<char> buffer);
 };
 }  // namespace PDSBackup
-
-#endif

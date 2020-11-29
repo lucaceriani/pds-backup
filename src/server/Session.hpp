@@ -1,5 +1,4 @@
-#ifndef PDS_BACKUP_SERVER_SESSION
-#define PDS_BACKUP_SERVER_SESSION
+#pragma once
 
 #include <boost/asio.hpp>
 #include <fstream>
@@ -53,5 +52,3 @@ class Session : public std::enable_shared_from_this<Session> {
 };
 
 }  // namespace PDSBackup
-
-#endif

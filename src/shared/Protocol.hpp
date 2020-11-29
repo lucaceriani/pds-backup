@@ -1,5 +1,4 @@
-#ifndef PDS_BACKUP_SHARED_PROTOCOL
-#define PDS_BACKUP_SHARED_PROTOCOL
+#pragma once
 
 #include <string>
 #include <vector>
@@ -48,4 +47,3 @@ class Protocol {
 };
 
 }  // namespace PDSBackup
-#endif

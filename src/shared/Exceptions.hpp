@@ -1,5 +1,4 @@
-#ifndef PDS_BACKUP_SHARED_EXCEPTIONS
-#define PDS_BACKUP_SHARED_EXCEPTIONS
+#pragma once
 
 #include <exception>
 #include <stdexcept>
@@ -12,43 +11,48 @@
 namespace PDSBackup {
 
 class BaseException {
-    virtual const char* what();
-    virtual Protocol::MessageCode messageCode();
+   public:
+    virtual const char* what() = 0;
+    virtual Protocol::MessageCode messageCode() = 0;
 };
 
 namespace Exception {
 
 class generic : public BaseException {
+   public:
     const char* what();
     Protocol::MessageCode messageCode();
 };
 
 class invalidLogin : public BaseException {
+   public:
     const char* what();
     Protocol::MessageCode messageCode();
 };
 
 class invalidFileUpload : public BaseException {
+   public:
     const char* what();
     Protocol::MessageCode messageCode();
 };
 
 class invalidFile : public BaseException {
+   public:
     const char* what();
     Protocol::MessageCode messageCode();
 };
 
 class invalidTransmission : public BaseException {
+   public:
     const char* what();
     Protocol::MessageCode messageCode();
 };
 
 class invalidProtocol : public BaseException {
+   public:
     const char* what();
     Protocol::MessageCode messageCode();
 };
 }  // namespace Exception
 
 }  // namespace PDSBackup
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef PDS_BACKUP_SHARED_HEADER
-#define PDS_BACKUP_SHARED_HEADER
+#pragma once
 
 #include <string>
 #include <vector>
@@ -25,5 +24,3 @@ class Header {
 };
 
 }  // namespace PDSBackup
-
-#endif
