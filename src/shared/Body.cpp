@@ -6,6 +6,11 @@
 
 using namespace PDSBackup;
 
+Body::Body() {
+    // inizializzazione buffer (ottimizzazione)
+    bodyBuffStorage.reserve(Protocol::bufferSize);
+}
+
 void Body::setHeader(Header h) {
     header = h;
 }
