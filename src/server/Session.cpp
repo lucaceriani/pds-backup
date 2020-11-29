@@ -1,7 +1,7 @@
 #include "Session.hpp"
 
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <cstdio>
 #include <fstream>
 #include <locale>
@@ -10,9 +10,6 @@
 using namespace PDSBackup;
 
 Session::Session(tcp::socket s) : socket(std::move(s)) {
-    // TODO da cancellare
-    throw Exception::generic();
-
     // inizializzo i vettori
     rawHeader.resize(Protocol::headerLenght);
     strBufBody.resize(Protocol::bufferSize);
@@ -95,7 +92,12 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
 
 void Session::doRead() {
     // comincio la lettura dall'header, si occupera' lui di far partire la lettura del body
-    readHeader();
+    try {
+        readHeader();
+    } catch (...) {
+        std::cout << "catch base exception" << std::endl;
+        socket.write_some(boost::asio::buffer("ciao", 4));
+    }
 }
 
 std::string Session::printLen(std::vector<char> s, unsigned long long len) {

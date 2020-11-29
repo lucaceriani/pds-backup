@@ -10,14 +10,15 @@ using boost::asio::ip::tcp;
 
 int main(int argc, char *argv[]) {
     try {
-        if (argc != 3) {
-            std::cerr << "Usage: blocking_tcp_echo_client <host> <port>\n";
-            return 1;
-        }
+        // if (argc != 3) {
+        //     std::cerr << "Usage: blocking_tcp_echo_client <host> <port>\n";
+        //     return 1;
+        // }
 
         boost::asio::io_service io_service;
 
-        tcp::iostream sockstream(tcp::resolver::query{argv[1], argv[2]});
+        // tcp::iostream sockstream(tcp::resolver::query{argv[1], argv[2]});
+        tcp::iostream sockstream(tcp::resolver::query{"localhost", "1234"});
 
         std::ifstream ifs("./__test.jpg", std::ios::binary);
 
@@ -26,7 +27,7 @@ int main(int argc, char *argv[]) {
 
         sockstream << "0001M123";
         sockstream << "aaaabbbbccccddddeeeeffff";
-        sockstream << std::setfill('0') << std::setw(16) << msg.length() + msg2.length() + 1;
+        sockstream << std::setfill('0') << std::setw(16) << msg.length() + msg2.length();  //+ 1;
         sockstream << msg;
         sockstream << '\0';
         sockstream << msg2;
@@ -51,13 +52,11 @@ int main(int argc, char *argv[]) {
         // std::cin.getline(request, max_length);
         size_t request_length = strlen(request);
         boost::asio::write(s, boost::asio::buffer(request, request_length));
-
-        char reply[max_length];
-        size_t reply_length = s.read_some(boost::asio::buffer(reply));
-        std::cout << "Reply is: ";
-        std::cout.write(reply, reply_length);
-        std::cout << "\n";
-        */
+*/
+        char reply[1024];
+        //size_t reply_length = s.read_some(boost::asio::buffer(reply));
+        sockstream >> reply;
+        std::cout << "Reply is: " << reply << std::endl;
 
     } catch (std::exception &e) {
         std::cerr << "Exception: " << e.what() << "\n";

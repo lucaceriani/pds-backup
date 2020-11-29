@@ -21,7 +21,7 @@ bool Body::push(std::vector<char> buffer, std::size_t readLen) {
 
     // controllo che il push non superi il valore di bodylenght dell'header
     if (bodyBuffStorage.size() > header.getBodyLenght()) {
-        throw std::runtime_error("Body piu' lungo di quanto dichiarato!");
+        throw Exception::invalidTransmission();
         return false;
     }
 
