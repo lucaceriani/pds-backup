@@ -20,8 +20,8 @@ client:
 server:
 	$(CC) $(DBG) $(LIB) $(SHARED) $(SRC)/server/*.cpp $(BOOST) -o server.out
 
-sc:
+sc: #start server
 	@export LD_LIBRARY_PATH=LD_LIBRARY_PATH:"$(shell pwd)/boost/lib" && ./client.out
 
-ss:
+ss: #start client
 	@export LD_LIBRARY_PATH=LD_LIBRARY_PATH:"$(shell pwd)/boost/lib" && ./server.out	
