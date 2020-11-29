@@ -49,7 +49,7 @@ void Session::readBody() {
     //     ofs.open("__t_received.jpg", std::ios::binary | std::ios::out);
     // }
 
-    socket.async_read_some(boost::asio::buffer(strBufBody, 8192),
+    socket.async_read_some(boost::asio::buffer(strBufBody, Protocol::bufferSize),
                            boost::bind(
                                &Session::handleReadBody,
                                shared_from_this(),
