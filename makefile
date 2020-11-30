@@ -1,28 +1,41 @@
-MAKEFLAGS := --jobs=4
-#.PHONY: client server
+MAKEFLAGS := --jobs=$(shell nproc)
+.PHONY: clean
 
-
-CC     = g++ -std=c++17 -Wall
-LIB    = -pthread 
-SHARED = src/shared/*.cpp
 DBG    = -g
-BOOST  = -Iboost/include -Lboost/lib -lboost_system -lboost_filesystem
-OSSL   = -lssl -lcrypto
-SRC    = src
+CFLAGS = -std=c++17 -Wall -pthread $(DBG)
+
+SRC_SERVER = $(wildcard src/server/*.cpp)
+SRC_SHARED = $(wildcard src/shared/*.cpp)
+SRC_CLIENT = $(wildcard src/client/*.cpp)
+
+OBJ_SERVER = $(SRC_SERVER:%.cpp=out/%.o) $(SRC_SHARED:%.cpp=out/%.o)
+OBJ_CLIENT = $(SRC_CLIENT:%.cpp=out/%.o) $(SRC_SHARED:%.cpp=out/%.o)
+
+BOOST      = -Iboost/include -Lboost/lib -lboost_system -lboost_filesystem
+OSSL       = -lssl -lcrypto
+LDFLAGS    = $(BOOST) $(OSSL)
 
 all: client server
 
+# regola per creare i file oggetto
+out/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	@echo "building --> $^"
+	@$(CXX) $(CFLAGS) -c $^ -o $@ $(LDFLAGS)
+
+server: $(OBJ_SERVER)
+	@echo "linking ---> server"
+	@$(CXX) $(CFLAGS) -o out/$@ $^ $(LDFLAGS)
+
+client: $(OBJ_CLIENT)
+	@echo "linking ---> client"
+	@$(CXX) $(CFLAGS) -o out/$@ $^ $(LDFLAGS)
+
 clean:
-	rm client.out server.out
+	@rm -rf out
 
-client:
-	$(CC) $(DBG) $(LIB) $(SHARED) $(SRC)/client/*.cpp $(BOOST) $(OSSL) -o client.out
+sc: client #start client
+	@export LD_LIBRARY_PATH=LD_LIBRARY_PATH:"$(shell pwd)/boost/lib" && ./out/client
 
-server:
-	$(CC) $(DBG) $(LIB) $(SHARED) $(SRC)/server/*.cpp $(BOOST) $(OSSL) -o server.out
-
-sc: #start server
-	@export LD_LIBRARY_PATH=LD_LIBRARY_PATH:"$(shell pwd)/boost/lib" && ./client.out
-
-ss: #start client
-	@export LD_LIBRARY_PATH=LD_LIBRARY_PATH:"$(shell pwd)/boost/lib" && ./server.out	
+ss: server #start server
+	@export LD_LIBRARY_PATH=LD_LIBRARY_PATH:"$(shell pwd)/boost/lib" && ./out/server

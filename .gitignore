@@ -4,6 +4,7 @@
 
 # cartelle e file che iniziano con boost e cpp-netlib
 boost*
+out/
 *.out
 
 # CMake files
