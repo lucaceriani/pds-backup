@@ -5,12 +5,15 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 using namespace PDSBackup;
 
 std::string Checksum::md5(std::string filePath) {
     // se fa il throw di una eccezione lo gestico a livelli superiori
     std::ifstream fs(filePath, std::ios::in | std::ios::binary);
+
+    if (!fs) throw std::runtime_error("Errore, impossibile aprire il file!");
 
     // se sono qui il file e' aperto
     const int buffSize = 65536;
@@ -21,7 +24,9 @@ std::string Checksum::md5(std::string filePath) {
     do {
         fs.read(buf, buffSize);
         MD5_Update(&ctx, buf, fs.gcount());
-    } while (!fs.eof());
+    } while (!fs.eof() || fs.fail());
+
+    if (fs.fail()) throw std::runtime_error("Impossibile leggere il file");
 
     fs.close();
 
