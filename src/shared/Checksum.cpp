@@ -13,7 +13,7 @@ std::string Checksum::md5(std::string filePath) {
     std::ifstream fs(filePath, std::ios::in | std::ios::binary);
 
     // se sono qui il file e' aperto
-    const int buffSize = 4096;
+    const int buffSize = 65536;
     char buf[buffSize];
     MD5_CTX ctx;
     MD5_Init(&ctx);
