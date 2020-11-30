@@ -14,17 +14,17 @@ class Protocol {
     static const std::string currentVersion;
     static const char separationChar;
     static const char messageChar;
-    static const int maxBodyFields;
-    static const int messageCodeLenght;
-    static const int versionLenght;
-    static const int bufferSize;
-    static const int headerLenght;
-    static const int headerBodyLenght;
-    static const int sessionIdLenght;
-    static const int sessionIdOffset;
-    static const int bodyLenghtOffset;
-    static const int messageCharOffset;
-    static const int messageCodeOffset;
+    static const unsigned int maxBodyFields;
+    static const unsigned int messageCodeLenght;
+    static const unsigned int versionLenght;
+    static const unsigned int bufferSize;
+    static const unsigned int headerLenght;
+    static const unsigned int headerBodyLenght;
+    static const unsigned int sessionIdLenght;
+    static const unsigned int sessionIdOffset;
+    static const unsigned int bodyLenghtOffset;
+    static const unsigned int messageCharOffset;
+    static const unsigned int messageCodeOffset;
 
     enum class MessageCode {
         // client
