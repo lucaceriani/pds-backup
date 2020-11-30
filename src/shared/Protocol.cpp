@@ -8,18 +8,18 @@ using namespace PDSBackup;
 const std::string Protocol::currentVersion = "0001";
 const char Protocol::separationChar = '\0';
 const char Protocol::messageChar = 'M';
-const int Protocol::maxBodyFields = 2;  // quanti campi "testuali" posso avere nel body
-const int Protocol::bufferSize = 8192;
+const unsigned int Protocol::maxBodyFields = 2;  // quanti campi "testuali" posso avere nel body
+const unsigned int Protocol::bufferSize = 8192;
 
 // lenghts
-const int Protocol::messageCodeLenght = 3;
-const int Protocol::versionLenght = 4;
-const int Protocol::headerLenght = 48;
-const int Protocol::headerBodyLenght = 16;
-const int Protocol::sessionIdLenght = 24;
+const unsigned int Protocol::messageCodeLenght = 3;
+const unsigned int Protocol::versionLenght = 4;
+const unsigned int Protocol::headerLenght = 48;
+const unsigned int Protocol::headerBodyLenght = 16;
+const unsigned int Protocol::sessionIdLenght = 24;
 
 // offsets
-const int Protocol::messageCharOffset = 4;
-const int Protocol::messageCodeOffset = 5;
-const int Protocol::sessionIdOffset = 8;
-const int Protocol::bodyLenghtOffset = 32;
+const unsigned int Protocol::messageCharOffset = 4;
+const unsigned int Protocol::messageCodeOffset = 5;
+const unsigned int Protocol::sessionIdOffset = 8;
+const unsigned int Protocol::bodyLenghtOffset = 32;

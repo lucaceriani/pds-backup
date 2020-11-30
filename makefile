@@ -2,7 +2,7 @@ MAKEFLAGS := --jobs=4
 #.PHONY: client server
 
 
-CC     = g++ -std=c++17
+CC     = g++ -std=c++17 -Wall
 LIB    = -pthread 
 SHARED = src/shared/*.cpp
 DBG    = -g

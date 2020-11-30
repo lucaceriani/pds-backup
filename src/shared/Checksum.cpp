@@ -28,8 +28,6 @@ std::string Checksum::md5(std::string filePath) {
     unsigned char md[MD5_DIGEST_LENGTH];
     MD5_Final(md, &ctx);
 
-    char hex[MD5_DIGEST_LENGTH + 1];
-
     std::stringstream s;
 
     for (int i = 0; i < MD5_DIGEST_LENGTH; i++)

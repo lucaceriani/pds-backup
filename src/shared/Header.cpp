@@ -37,7 +37,7 @@ bool Header::parse(std::vector<char> rawHeader) {
 
     std::string messageCodeStr;
 
-    for (int i = 0; i < Protocol::messageCodeLenght; i++) {
+    for (unsigned int i = 0; i < Protocol::messageCodeLenght; i++) {
         messageCodeStr.push_back(rawHeader[i + Protocol::messageCodeOffset]);
     }
 
@@ -55,7 +55,7 @@ bool Header::parse(std::vector<char> rawHeader) {
 
     std::string bodyLenghtStr;
 
-    for (int i = 0; i < Protocol::headerBodyLenght; i++) {
+    for (unsigned int i = 0; i < Protocol::headerBodyLenght; i++) {
         // controllo che tutti i caratteri successivi siano effettivamente cifre
         if (!std::isdigit(rawHeader[i + Protocol::bodyLenghtOffset])) {
             return false;
@@ -63,7 +63,7 @@ bool Header::parse(std::vector<char> rawHeader) {
         bodyLenghtStr.push_back(rawHeader[i + Protocol::bodyLenghtOffset]);
     }
 
-    for (int i = 0; i < Protocol::sessionIdLenght; i++) {
+    for (unsigned int i = 0; i < Protocol::sessionIdLenght; i++) {
         sessionId.push_back(rawHeader[i + Protocol::sessionIdOffset]);
     }
 

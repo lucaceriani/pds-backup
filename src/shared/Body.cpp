@@ -19,7 +19,7 @@ bool Body::push(std::vector<char> buffer, std::size_t readLen) {
     if (header.isFileUpload()) {
         // TODO push if header is fileupload
     } else {
-        for (int i = 0; i < readLen; i++) {
+        for (size_t i = 0; i < readLen; i++) {
             bodyBuffStorage.push_back(buffer[i]);
         }
     }
@@ -40,7 +40,7 @@ bool Body::parse() {
 
     int lastPos = 0;
 
-    for (int i = 0; i < bodyBuffStorage.size(); i++) {
+    for (size_t i = 0; i < bodyBuffStorage.size(); i++) {
         if (bodyBuffStorage[i] == '\0') {
             fields.push_back(std::string(bodyBuffStorage.data() + lastPos, bodyBuffStorage.data() + i));
             lastPos = i + 1;
