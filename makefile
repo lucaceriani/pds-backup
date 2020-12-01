@@ -34,8 +34,8 @@ client: $(OBJ_CLIENT)
 clean:
 	@rm -rf out
 
-sc: client #start client
+sc: #start client
 	@export LD_LIBRARY_PATH=LD_LIBRARY_PATH:"$(shell pwd)/boost/lib" && ./out/client
 
-ss: server #start server
+ss: #start server
 	@export LD_LIBRARY_PATH=LD_LIBRARY_PATH:"$(shell pwd)/boost/lib" && ./out/server

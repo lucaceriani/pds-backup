@@ -14,6 +14,7 @@ class Body {
     bool needsToSaveFile();
     void setHeader(Header header);
     bool push(std::vector<char> buffer, std::size_t readLen);
+    std::size_t pushWithFile(std::vector<char> buffer, std::size_t readLen);
     bool parse();
     // Per ottenere i campi parsificati
     std::vector<std::string> getFields();

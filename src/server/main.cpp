@@ -15,6 +15,7 @@
 #include <string>
 #include <utility>
 
+#include "../shared/Exceptions.hpp"
 #include "Server.hpp"
 
 using boost::asio::ip::tcp;
@@ -27,6 +28,8 @@ int main(int argc, char *argv[]) {
         io_context.run();
     } catch (std::exception &e) {
         std::cerr << "Exception: " << e.what() << "\n";
+    } catch (PDSBackup::BaseException &e) {
+        std::cerr << "Errore server: " << e.what() << "\n";
     }
 
     return 0;

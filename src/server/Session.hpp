@@ -33,6 +33,7 @@ class Session : public std::enable_shared_from_this<Session> {
 
     tcp::socket socket;
     std::ofstream ofs;
+    std::string currFilePath;
 
     // Legge l'header
     void readHeader();

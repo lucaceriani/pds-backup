@@ -1,10 +1,13 @@
 #include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/thread/thread.hpp>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+
+#include "../shared/Checksum.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -14,6 +17,9 @@ int main(int argc, char *argv[]) {
         //     std::cerr << "Usage: blocking_tcp_echo_client <host> <port>\n";
         //     return 1;
         // }
+
+        // std::cout << PDSBackup::Checksum::md5("00__test.jpg") << std::endl;
+        // return 0;
 
         boost::asio::io_service io_service;
 
@@ -25,14 +31,16 @@ int main(int argc, char *argv[]) {
         std::string msg = "Questo e' il messaggio che vogio inviare";
         std::string msg2 = "Il secondo campo e' anche piu' lungo del primo";
 
-        sockstream << "0001M123";
+        sockstream << "0001M021";
+        // sockstream.flush();
+        // std::this_thread::sleep_for(std::chrono::seconds(2));
         sockstream << "aaaabbbbccccddddeeeeffff";
-        sockstream << std::setfill('0') << std::setw(16) << msg.length() + msg2.length();  //+ 1;
-        sockstream << msg;
+        sockstream << std::setfill('0') << std::setw(16) << boost::filesystem::file_size("./__test.jpg");
+        sockstream << "__ricevuto.jpg";
         sockstream << '\0';
-        sockstream << msg2;
-        // sockstream << std::setfill('0') << std::setw(16) << boost::filesystem::file_size("./__test.jpg");
-        // sockstream << ifs.rdbuf();
+        sockstream << ifs.rdbuf();
+        // sockstream << std::setfill('0') << std::setw(16) << msg.length() + msg2.length() + 1;
+        // sockstream << msg << '\0' << msg2;
         sockstream.flush();
 
         /*
@@ -53,10 +61,10 @@ int main(int argc, char *argv[]) {
         size_t request_length = strlen(request);
         boost::asio::write(s, boost::asio::buffer(request, request_length));
 */
-        char reply[1024];
-        //size_t reply_length = s.read_some(boost::asio::buffer(reply));
-        sockstream >> reply;
-        std::cout << "Reply is: " << reply << std::endl;
+        // char reply[1024];
+        // //size_t reply_length = s.read_some(boost::asio::buffer(reply));
+        // sockstream >> reply;
+        // std::cout << "Reply is: " << reply << std::endl;
 
     } catch (std::exception &e) {
         std::cerr << "Exception: " << e.what() << "\n";
