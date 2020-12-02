@@ -3,7 +3,7 @@ MAKEFLAGS := --jobs=2
 
 
 CC     = g++ -g
-LIB    = -pthread -static -I boost/include
+LIB    = -pthread -static -Iboost/include
 # SHARED = src/shared/*.cpp
 BOOST  = -Lboost/lib -lboost_system -lboost_filesystem
 SRC    = src

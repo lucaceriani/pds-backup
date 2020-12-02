@@ -1,7 +1,3 @@
-//
-// Created by federico on 29/11/20.
-//
-
 #include <boost/filesystem.hpp>
 #include <chrono>
 #include <thread>

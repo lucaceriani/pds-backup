@@ -59,6 +59,7 @@ Le virgole nelle tabelle successive devono essere interpretate come carattere nu
 | 011 | invio credenziali | username, password |
 | 020 | probe file | percorso file, checksum |
 | 021 | upload file | percorso file, raw file |
+| 022 | upload directory | percorso cartella |
 | 030 | cancella file | percorso file |
 | 031 | cancella cartella | percorso cartella |
 
