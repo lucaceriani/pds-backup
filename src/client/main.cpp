@@ -54,7 +54,9 @@ int main(int argc, char *argv[]) {
         // std::cout << "Enter message: ";
         // char request[max_length];
         std::string request = "0001M010________________________0000000000000013Ciao come va?";
+        boost::asio::write(s, boost::asio::buffer(request.data(), request.length()));
 
+        request = "0001M010______secondo mess______0000000000000013Inseriscodati";
         boost::asio::write(s, boost::asio::buffer(request.data(), request.length()));
 
         // std::cout.write(request.data(), 50);

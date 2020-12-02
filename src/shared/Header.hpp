@@ -16,6 +16,8 @@ class Header {
     std::string getSessionId();
     unsigned long long getBodyLenght();
 
+    void clear();
+
    private:
     bool valid;
     std::string sessionId;

@@ -19,6 +19,8 @@ class Body {
     // Per ottenere i campi parsificati
     std::vector<std::string> getFields();
 
+    void clear();
+
    private:
     Header header;
     std::vector<std::string> fields;

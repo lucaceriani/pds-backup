@@ -44,10 +44,14 @@ class Session : public std::enable_shared_from_this<Session> {
 
     // Si occupa di leggere il body finché non ha finito
     // TODO controllo della lunghezza del body!
+    void handleReadBodyFile(boost::system::error_code ec, std::size_t readLen);
     void handleReadBody(boost::system::error_code ec, std::size_t readLen);
 
     // Funzione chiamata dopo aver letto correttamente l'header
     unsigned long long checkHeader(std::size_t lenght);
+
+    // imposta certi valori alle impostazioni iniziali
+    void reset(bool readNext = true);
 
     // funzione che stampa un certo numero di caratteri
     std::string printLen(std::vector<char> s, unsigned long long len);

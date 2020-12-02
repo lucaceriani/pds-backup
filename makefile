@@ -18,10 +18,10 @@ LDFLAGS    = $(BOOST) $(OSSL)
 all: client server
 
 # regola per creare i file oggetto
-out/%.o: %.cpp
+out/%.o: %.cpp 
 	@mkdir -p $(dir $@)
 	@echo "building --> $^"
-	@$(CXX) $(CFLAGS) -c $^ -o $@ $(LDFLAGS)
+	@$(CXX) $(CFLAGS) -c $< -o $@ $(LDFLAGS)
 
 server: $(OBJ_SERVER)
 	@echo "linking ---> server"

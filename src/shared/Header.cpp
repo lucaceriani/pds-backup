@@ -78,3 +78,9 @@ bool Header::parse(std::vector<char> rawHeader) {
     valid = true;
     return true;
 }
+
+void Header::clear() {
+    valid = false;
+    sessionId.clear();
+    bodyLenght = 0;
+}
