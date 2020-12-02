@@ -30,6 +30,7 @@ class Session : public std::enable_shared_from_this<Session> {
 
     std::vector<char> rawHeader;
     std::vector<char> strBufBody;
+    unsigned long long bodyReadSoFar;
 
     tcp::socket socket;
     std::ofstream ofs;

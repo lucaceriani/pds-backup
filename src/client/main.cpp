@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 
         // std::cout << PDSBackup::Checksum::md5("00__test.jpg") << std::endl;
         // return 0;
-
+        /*
         boost::asio::io_service io_service;
 
         // tcp::iostream sockstream(tcp::resolver::query{argv[1], argv[2]});
@@ -42,25 +42,32 @@ int main(int argc, char *argv[]) {
         // sockstream << std::setfill('0') << std::setw(16) << msg.length() + msg2.length() + 1;
         // sockstream << msg << '\0' << msg2;
         sockstream.flush();
-
-        /*
+*/
+        boost::asio::io_service io_service;
         tcp::resolver resolver(io_service);
-        tcp::resolver::query query(tcp::v4(), argv[1], argv[2]);
+        tcp::resolver::query query(tcp::v4(), "localhost", "1234");
         tcp::resolver::iterator iterator = resolver.resolve(query);
 
         tcp::socket s(io_service);
         s.connect(*iterator);
 
-        using namespace std;  // For strlen.
         // std::cout << "Enter message: ";
         // char request[max_length];
-        const char *request = "0001M12300000000111111112222222233333333";
-        std::cout << "automessage" << std::endl;
+        std::string request = "0001M010________________________0000000000000013Ciao come va?";
 
-        // std::cin.getline(request, max_length);
-        size_t request_length = strlen(request);
-        boost::asio::write(s, boost::asio::buffer(request, request_length));
-*/
+        boost::asio::write(s, boost::asio::buffer(request.data(), request.length()));
+
+        // std::cout.write(request.data(), 50);
+        // std::cout << std::endl;
+
+        // std::this_thread::sleep_for(std::chrono::seconds(2));
+
+        // boost::asio::write(s, boost::asio::buffer(request.data() + 50, request.length() - 50));
+        // std::cout.write(request.data() + 50, request.length() - 50);
+        // std::cout << std::endl;
+
+        s.close();
+
         // char reply[1024];
         // //size_t reply_length = s.read_some(boost::asio::buffer(reply));
         // sockstream >> reply;

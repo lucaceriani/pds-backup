@@ -9,7 +9,7 @@
 
 using namespace PDSBackup;
 
-Session::Session(tcp::socket s) : socket(std::move(s)) {
+Session::Session(tcp::socket s) : bodyReadSoFar(0), socket(std::move(s)) {
     // inizializzo i vettori
     rawHeader.resize(Protocol::headerLenght);
     strBufBody.resize(Protocol::bufferSize);
