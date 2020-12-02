@@ -32,22 +32,35 @@ Chi è la **SOOT**?
 # Protocollo
 
 ## Header
-L'header è lungo 40 byte. La codifica dell'header è di tipo ASCII, non è binario.
+L'header è lungo **48 byte**. La codifica dell'header è di tipo ASCII, non è binario.
 
+#### [0-3] Versione
 I **primi 4 byte** indicano la versione del protocollo, di cui i primi due la versione maggiore e gli 
 ultimi due la versione minore. 
 
-> Ad esempio `0123` rappresenta la versione 1.23 e `0101` rappresenta la versione 1.1.
+> Ad esempio `0123` rappresenta la versione 1.23 e `0100` rappresenta la versione 1.00.
+
+#### [4-7] Codice messaggio
 
 I **successivi 4 byte** rappresentano il tipo di messaggio scambiato.
-Il primo byte è sempre una M maiuscola, i **successivi 3byte**  sono il codice del messaggio, che molto vagamente vogliono ricordare i codici HTTP.
+Il primo byte è sempre una `M` maiuscola, i successivi 3 sono il codice del messaggio, che molto vagamente vogliono ricordare i codici HTTP.
 
-I **successivi 16 byte** sono la codifica ASCII del numero, in base 10, di byte di lunghezza del body.
+#### [8-31] ID di sessione
+
+I **successivi 24 byte** sono l'ID della sessione utilizzato come cookie per il riconoscimento di un utente già loggato. I caratteri ASCII utilizzati sono quelli della codifica `base64url`, ovvero tutte le lettere dell'alfabeto, maiuscole e minuscole, le dieci cifre e i caratteri `-` e `_`.
+
+Così facendo ci si allinea quantomeno alle *best practices* dell'OWASP, consultabili a [questo link](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#session-id-length) in cui si consiglia di utilizzare al minimo una lunghezza pari a 128bit (64 bit di entropia), ovvero con 2^128 ~ 10^38 possibili combinazioni.
+
+In questo protocollo si usano 24 caratteri con 64 combinazioni ciascuno, ovvero 64^24 ~ 10^43.
+
+#### [32-47] Lunghezza del body
+
+Gli  **ultimi 16 byte** sono la codifica ASCII del numero, in base 10, di byte di lunghezza del body.
 
 ## Body
 Il body può essere di lunghezza variabile, ogni campo del body è codificato come ASCII a esclusione della parte file del  `021 - upload file` in cui il file stesso è inviato *raw*.
 
-Le virgole nelle tabelle successive devono essere interpretate come carattere nullo `0x00`.
+Le virgole `,` nelle tabelle successive devono essere interpretate come carattere nullo `0x00`.
 
 ## Codici del messaggio
 
@@ -59,7 +72,6 @@ Le virgole nelle tabelle successive devono essere interpretate come carattere nu
 | 011 | invio credenziali | username, password |
 | 020 | probe file | percorso file, checksum |
 | 021 | upload file | percorso file, raw file |
-| 022 | upload directory | percorso cartella |
 | 030 | cancella file | percorso file |
 | 031 | cancella cartella | percorso cartella |
 
@@ -76,20 +88,25 @@ Le virgole nelle tabelle successive devono essere interpretate come carattere nu
 | 211 | versione protocollo incompatibile | (vuoto)
 
 ## Esempio
-Dopo essermi autenticato, voglio inviare un file da **20 byte** che si trova, nel client, nella cartella **prova/abc.txt**. I byte totali saranno quindi 20 (file) + 13 (percorso file) + 1 (carattere nullo) = **34 byte**.
+Dopo essermi autenticato, ho ottenuto l'ID di sessione `TkZ1Q-ILbN25UKGM5BUVzl_7`, voglio inviare un file da **20 byte** che si trova, nel client, nella cartella **prova/abc.txt**. I byte totali del body saranno quindi 20 (file) + 13 (percorso file) + 1 (carattere nullo) = **34 byte**.
 
 **Il messaggio**:
 
 in cui `~` rappresenta il caratter nullo e `*` rappresentano i byte del file.
 ```
-0100 M021    |
-0000 0000    |
-0000 0034    |__ header
-
-prov a/ab    |
-c.tx t~**    |
-**** ****    |
-**** ****    |
-**           |__ body
+           header
+0001 M021   | 0
+TkZ1 Q-IL   | 8   << id sessione
+bN25 UKGM   |16 
+5BUV zl_7   |24
+0000 0000   |32   << lunghezza body
+0000 0034   |40
+            |
+           body
+prov a/ab   |48
+c.tx t~**   |
+**** ****   |
+**** ****   |
+**          |
 ```
 

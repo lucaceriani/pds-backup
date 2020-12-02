@@ -1,5 +1,4 @@
-#ifndef PDS_BACKUP_SERVER_SERVER
-#define PDS_BACKUP_SERVER_SERVER
+#pragma once
 
 #include <boost/asio.hpp>
 #include <memory>
@@ -22,5 +21,3 @@ class Server {
     void doAccept();
 };
 }  // namespace PDSBackup
-
-#endif
