@@ -28,7 +28,7 @@ bool Header::parse(std::vector<char> rawHeader) {
     valid = false;
 
     // controllo byte letti
-    if (rawHeader.size() != Protocol::headerLenght) return false;
+    if (rawHeader.size() != Protocol::headerLength) return false;
 
     // controllo lettera M
     if (rawHeader[Protocol::messageCharOffset] != Protocol::messageChar) return false;
@@ -37,7 +37,7 @@ bool Header::parse(std::vector<char> rawHeader) {
 
     std::string messageCodeStr;
 
-    for (unsigned int i = 0; i < Protocol::messageCodeLenght; i++) {
+    for (unsigned int i = 0; i < Protocol::messageCodeLength; i++) {
         messageCodeStr.push_back(rawHeader[i + Protocol::messageCodeOffset]);
     }
 
@@ -53,22 +53,22 @@ bool Header::parse(std::vector<char> rawHeader) {
     for (int i = 0; i < 4; i++)
         if (rawHeader[i] != Protocol::currentVersion[i]) return false;
 
-    std::string bodyLenghtStr;
+    std::string bodyLengthStr;
 
-    for (unsigned int i = 0; i < Protocol::headerBodyLenght; i++) {
+    for (unsigned int i = 0; i < Protocol::headerBodyLength; i++) {
         // controllo che tutti i caratteri successivi siano effettivamente cifre
         if (!std::isdigit(rawHeader[i + Protocol::bodyLenghtOffset])) {
             return false;
         }
-        bodyLenghtStr.push_back(rawHeader[i + Protocol::bodyLenghtOffset]);
+        bodyLengthStr.push_back(rawHeader[i + Protocol::bodyLenghtOffset]);
     }
 
-    for (unsigned int i = 0; i < Protocol::sessionIdLenght; i++) {
+    for (unsigned int i = 0; i < Protocol::sessionIdLength; i++) {
         sessionId.push_back(rawHeader[i + Protocol::sessionIdOffset]);
     }
 
     try {
-        bodyLenght = std::stoull(bodyLenghtStr);
+        bodyLenght = std::stoull(bodyLengthStr);
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return false;

@@ -49,10 +49,10 @@ class Session : public std::enable_shared_from_this<Session> {
     // Si occupa di leggere il body finché non ha finito
     void handleReadBody(boost::system::error_code ec, std::size_t readLen);
 
-    // Funzione chiamata dopo aver letto correttamente l'header
-    unsigned long long checkHeader(std::size_t lenght);
+    // Fa l'azione richiesta dal server (tranne salvare il file) e risponde
+    void doTheStuffAndReply();
 
-    // imposta certi valori alle impostazioni iniziali
+    // Imposta certi valori alle impostazioni iniziali
     void reset(bool readNext = true);
 
     // funzione che stampa un certo numero di caratteri

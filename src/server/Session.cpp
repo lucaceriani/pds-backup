@@ -9,11 +9,13 @@
 #include <locale>
 #include <string>
 
+#include "../shared/MessageBuilder.hpp"
+
 using namespace PDSBackup;
 
 Session::Session(tcp::socket s) : bodyReadSoFar(0), socket(std::move(s)) {
     // inizializzo i vettori
-    rawHeader.resize(Protocol::headerLenght);
+    rawHeader.resize(Protocol::headerLength);
     bodyBuffer.resize(Protocol::bufferSize);
 }
 
@@ -22,7 +24,7 @@ void Session::readHeader() {
 
     boost::asio::async_read(
         socket,
-        boost::asio::buffer(rawHeader, Protocol::headerLenght),
+        boost::asio::buffer(rawHeader, Protocol::headerLength),
         [this, self](boost::system::error_code ec, std::size_t readLen) {
             if (!ec) {
                 std::cout << "Letto header: " << printLen(rawHeader, readLen) << std::endl;
@@ -94,13 +96,19 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
             // se ho trovato la posizione a cui comincia il file
             // allora il pushWithFile mi avra' messo il filepath
             // dentro il primo body field
-            currFilePath = "__ricevuti/" + body.getFields()[0];
+            if (!ofs.is_open()) {
+                currFilePath = "__ricevuti/" + body.getFields()[0];
 
-            if (!ofs.is_open()) ofs.open(currFilePath, std::ios::binary);
+                // creo le cartelle per ospitare il file
+                boost::filesystem::path p = currFilePath;
+                p.remove_filename();
+                boost::filesystem::create_directories(p);
 
-            // se ho dei problemi con l'apertura del file
-            // FIXME da riveredere, nessuno prende questa eccezione
-            if (!ofs) throw Exception::invalidFileUpload();
+                ofs.open(currFilePath, std::ios::binary);
+                // se ho dei problemi con l'apertura del file
+                // FIXME da riveredere, nessuno prende questa eccezione
+                if (!ofs) throw Exception::invalidFileUpload();
+            };
 
             ofs.write(bodyBuffer.data() + pos, readLen - pos);
         }
@@ -130,6 +138,8 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
 
             std::cout << "Letto tutto il messaggio!" << std::endl;
 
+            doTheStuffAndReply();
+
             // reset della sessione
             reset();
         } else {
@@ -147,6 +157,15 @@ void Session::doRead() {
         std::cout << "catch base exception" << std::endl;
         socket.write_some(boost::asio::buffer("ciao", 4));
     }
+}
+
+void Session::doTheStuffAndReply() {
+    // prendo le informazioni che mi servono dal body e dall'header
+    MessageBuilder msg;
+    msg.addField("Primo field");
+    msg.addField("Secondo field bellissimo!");
+    msg.setMessageCode(Protocol::MessageCode::ok);
+    std::cout << "Messaggio: " + msg.buildStr() << std::endl;
 }
 
 std::string Session::printLen(std::vector<char> s, unsigned long long len) {
