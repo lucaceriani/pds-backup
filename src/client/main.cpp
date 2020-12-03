@@ -129,9 +129,9 @@ int main(int argc, char *argv[]) {
                 mb.setPath(path_to_watch);
                 message = mb.build();
                 sockstream << message;
-                char *buff;
+                char buff[8192];
                 std::ifstream fileToSend(path_to_watch, std::ios::binary);
-                while (fileToSend.read(buff, 8000)) {
+                while (fileToSend.read(buff, 8192)) {
                     sockstream << buff;
                 }
                 sockstream.flush();
@@ -162,9 +162,9 @@ int main(int argc, char *argv[]) {
                 mb.setPath(path_to_watch);
                 message = mb.build();
                 sockstream << message;
-                char* buff;
+                char buff[8192];
                 std::ifstream fileToSend(path_to_watch, std::ios::binary);
-                while(fileToSend.read(buff,8000)){
+                while(fileToSend.read(buff,8192)){
                     sockstream << buff;
                 }
                 sockstream.flush();
