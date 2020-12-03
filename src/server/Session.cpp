@@ -14,7 +14,7 @@ using namespace PDSBackup;
 Session::Session(tcp::socket s) : bodyReadSoFar(0), socket(std::move(s)) {
     // inizializzo i vettori
     rawHeader.resize(Protocol::headerLenght);
-    strBufBody.resize(Protocol::bufferSize);
+    bodyBuffer.resize(Protocol::bufferSize);
 }
 
 void Session::readHeader() {
@@ -51,7 +51,7 @@ void Session::readBody() {
     std::cout << "Sto per leggere body con buffer = " << toRead << std::endl;
 
     socket.async_read_some(
-        boost::asio::buffer(strBufBody, toRead),
+        boost::asio::buffer(bodyBuffer, toRead),
         boost::bind(
             &Session::handleReadBody,
             shared_from_this(),
@@ -87,7 +87,7 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
     if (header.isFileUpload()) {
         std::cout << "handleReadBody() con file, con readLen = " << readLen << std::endl;
 
-        std::size_t pos = body.pushWithFile(strBufBody, readLen);
+        std::size_t pos = body.pushWithFile(bodyBuffer, readLen);
 
         // faccio il controllo di validita' su pos
         if (pos != (std::size_t)-1 && pos < readLen) {
@@ -102,7 +102,7 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
             // FIXME da riveredere, nessuno prende questa eccezione
             if (!ofs) throw Exception::invalidFileUpload();
 
-            ofs.write(strBufBody.data() + pos, readLen - pos);
+            ofs.write(bodyBuffer.data() + pos, readLen - pos);
         }
 
         // se sono alla fine
@@ -118,7 +118,7 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
             readBody();
         };
     } else {
-        body.push(strBufBody, readLen);
+        body.push(bodyBuffer, readLen);
 
         if (isLastChunk) {
             body.parse();
