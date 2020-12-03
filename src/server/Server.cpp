@@ -18,6 +18,7 @@ Server::Server(boost::asio::io_context& io_context, short port)
 void Server::doAccept() {
     acceptor.async_accept([this](boost::system::error_code ec, tcp::socket socket) {
         if (!ec) {
+            std::cout << std::string(80, '-') << "\n";
             std::cout << "Nuova connessione da: " << socket.remote_endpoint().address().to_string() << std::endl;
             // try {
             std::make_shared<PDSBackup::Session>(std::move(socket))->doRead();

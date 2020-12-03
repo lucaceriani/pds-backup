@@ -48,14 +48,30 @@ int main(int argc, char *argv[]) {
         tcp::resolver::query query(tcp::v4(), "localhost", "1234");
         tcp::resolver::iterator iterator = resolver.resolve(query);
 
+        std::string request;
         tcp::socket s(io_service);
         s.connect(*iterator);
 
         // std::cout << "Enter message: ";
         // char request[max_length];
-        std::string request = "0001M010________________________0000000000000013Ciao come va?";
+        request = "0001M010________________________0000000000000013Ciao come va?";
         boost::asio::write(s, boost::asio::buffer(request.data(), request.length()));
 
+        // esempio invio file
+        request = "0001M021______mess con file_____0000000000120393fileBelissimo.jpg";
+        request += '\0';
+        boost::asio::write(s, boost::asio::buffer(request, request.length()));
+        std::ifstream fp;
+        fp.open("__test.jpg", std::ios::binary);
+        char b[1024];
+        while (42) {
+            fp.read(b, 1024);
+            boost::asio::write(s, boost::asio::buffer(b, fp.gcount()));
+            if (fp.eof()) break;
+        }
+        fp.close();
+
+        // esempio invio altro messaggio senza file
         request = "0001M010______secondo mess______0000000000000013Inseriscodati";
         boost::asio::write(s, boost::asio::buffer(request.data(), request.length()));
 

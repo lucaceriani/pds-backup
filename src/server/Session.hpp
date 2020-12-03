@@ -21,8 +21,12 @@ class Session : public std::enable_shared_from_this<Session> {
    public:
     Session(tcp::socket s);
 
-    // Metodo da hciamare per cominciare la lettura
+    // Metodo da chiamare per cominciare la lettura
     void doRead();
+
+    ~Session() {
+        std::cout << "Fine sessione\n" + std::string(80, '-') << std::endl;
+    }
 
    private:
     Header header;
@@ -43,8 +47,6 @@ class Session : public std::enable_shared_from_this<Session> {
     void readBody();
 
     // Si occupa di leggere il body finché non ha finito
-    // TODO controllo della lunghezza del body!
-    void handleReadBodyFile(boost::system::error_code ec, std::size_t readLen);
     void handleReadBody(boost::system::error_code ec, std::size_t readLen);
 
     // Funzione chiamata dopo aver letto correttamente l'header

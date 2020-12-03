@@ -1,5 +1,6 @@
 #include "Session.hpp"
 
+#include <algorithm>
 #include <boost/asio.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/filesystem.hpp>
@@ -45,127 +46,95 @@ void Session::readHeader() {
 }
 
 void Session::readBody() {
-    if (header.isFileUpload()) {
-        socket.async_read_some(boost::asio::buffer(strBufBody, Protocol::bufferSize),
-                               boost::bind(
-                                   &Session::handleReadBodyFile,
-                                   shared_from_this(),
-                                   boost::asio::placeholders::error,
-                                   boost::asio::placeholders::bytes_transferred));
-    } else {
-        boost::asio::async_read(
-            socket,
-            boost::asio::buffer(strBufBody, header.getBodyLenght()),
-            boost::bind(
-                &Session::handleReadBody,
-                shared_from_this(),
-                boost::asio::placeholders::error,
-                boost::asio::placeholders::bytes_transferred));
-    }
+    auto toRead = std::min((unsigned long long)Protocol::bufferSize, header.getBodyLenght() - bodyReadSoFar);
+
+    std::cout << "Sto per leggere body con buffer = " << toRead << std::endl;
+
+    socket.async_read_some(
+        boost::asio::buffer(strBufBody, toRead),
+        boost::bind(
+            &Session::handleReadBody,
+            shared_from_this(),
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred));
 }
 
 void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) {
-    // se ho letto la quantita' giusta e non ho errore oppure sono alla fine della connessione va bene
-    if (readLen == header.getBodyLenght() && (!ec || ec == boost::asio::error::eof)) {
-        body.push(strBufBody, readLen);
-        body.parse();
-        std::vector<std::string> fields = body.getFields();
-        for (auto x : fields) std::cout << "Letto field: " << x << std::endl;
-        std::cout << "Letto tutto il messaggio!" << std::endl;
-    }
+    std::cout << "Ho letto body con buffer = " << readLen << std::endl;
 
-    if (ec != boost::asio::error::eof) {
-        reset();
-    }
-}
-
-void Session::handleReadBodyFile(boost::system::error_code ec, std::size_t readLen) {
     bool isLastChunk = false;
+    // controllo se ho degli errori che non sono EOF
+    // oppure
+    // se ho EOF ma non ho finito di leggere il body
+    if ((ec && ec != boost::asio::error::eof) ||
+        (ec == boost::asio::error::eof && bodyReadSoFar + readLen != header.getBodyLenght())) {
+        if (ofs.is_open() && currFilePath.length() > 0) {
+            ofs.close();
+            boost::filesystem::remove(currFilePath);
+            std::cout << "Errore ec: " << ec.message() << std::endl;
+            return;
+        }
+    }
+
+    // se arrivo qui vuol dire che o mi manca da leggere altro body o tutto quello
+    // che ho letto e' valido (anche se eof)
 
     // aggiorno il contatore
     bodyReadSoFar += readLen;
 
-    // sono all'ultimo pezzo di body se con questo chunk arrivo alla lunghezza del body
     if (bodyReadSoFar == header.getBodyLenght()) isLastChunk = true;
 
-    // se ho un errore del tipo eof vogio controllare che sono arrivato alla fine del body
-    // mi serve nel caso in cui ho una connessione aperta e ho due pacchetti uno di seguito all'altro
-    // in questo modo controllo se ho chiuso la connessione e letto tutto un pacchetto
-    // oppure se ho chiuso la connessine e letto parte di un pacchetto
-    if (ec == boost::asio::error::eof && bodyReadSoFar != header.getBodyLenght()) {
-        // chiudo eventuali file aperti
-        if (ofs.is_open()) ofs.close();
-
-        // chiudo la conessione
-        // TODO si fa cosi'?
-        return;
-    }
-
     if (header.isFileUpload()) {
-        // se non ho errori o se non ho piu' dati da leggere
-        if (!ec || ec == boost::asio::error::eof) {
-            std::cout << "handleReadBody() con file, con readLen = " << readLen << std::endl;
+        std::cout << "handleReadBody() con file, con readLen = " << readLen << std::endl;
 
-            std::size_t pos = body.pushWithFile(strBufBody, readLen);
+        std::size_t pos = body.pushWithFile(strBufBody, readLen);
 
-            // faccio il controllo di validita' su pos
-            if (pos != (std::size_t)-1 && pos < readLen) {
-                // se ho trovato la posizione a cui comincia il file
-                // allora il pushWithFile mi avra' messo il filepath
-                // dentro il primo body field
-                currFilePath = "__ricevuti/" + body.getFields()[0];
+        // faccio il controllo di validita' su pos
+        if (pos != (std::size_t)-1 && pos < readLen) {
+            // se ho trovato la posizione a cui comincia il file
+            // allora il pushWithFile mi avra' messo il filepath
+            // dentro il primo body field
+            currFilePath = "__ricevuti/" + body.getFields()[0];
 
-                if (!ofs.is_open()) ofs.open(currFilePath, std::ios::binary);
+            if (!ofs.is_open()) ofs.open(currFilePath, std::ios::binary);
 
-                // se ho dei problemi con l'apertura del file
-                if (!ofs) throw Exception::invalidFileUpload();
+            // se ho dei problemi con l'apertura del file
+            // FIXME da riveredere, nessuno prende questa eccezione
+            if (!ofs) throw Exception::invalidFileUpload();
 
-                ofs.write(strBufBody.data() + pos, readLen - pos);
-            }
-
-            // se sono alla fine
-            if (isLastChunk) {
-                ofs.close();
-                std::cout << "Ho salvato il file: " << body.getFields()[0] << std::endl;
-                std::cout << "Letto tutto il messaggio!" << std::endl;
-
-                // reset della sessione
-                reset();
-            } else {
-                // continuo a leggere
-                readBody();
-            };
-
-        } else {
-            boost::filesystem::remove(currFilePath);
-            std::cout << "Errore: " << ec.message() << std::endl;
+            ofs.write(strBufBody.data() + pos, readLen - pos);
         }
 
-    } else {  // no ho un file upload
-        // se non ho piu' dati da leggere allora devo anche chiudere il file
-        if (!ec) {
-            // pusho il contenuto del body e continuo a leggerlo
-            body.push(strBufBody, readLen);
+        // se sono alla fine
+        if (isLastChunk) {
+            ofs.close();
+            std::cout << "Ho salvato il file: " << body.getFields()[0] << std::endl;
+            std::cout << "Letto tutto il messaggio!" << std::endl;
+
+            // reset della sessione, pronti per accettare un nuovbo header
+            reset();
+        } else {
+            // continuo a leggere
             readBody();
+        };
+    } else {
+        body.push(strBufBody, readLen);
 
-        } else if (isLastChunk || ec == boost::asio::error::eof) {
-            // pusho il contenuto del body per l'ultima volta e faccio il parsing
-            body.push(strBufBody, readLen);
+        if (isLastChunk) {
             body.parse();
+            // TODO eseguire l'azione associata al messaggio
 
-            std::vector<std::string> ciao = body.getFields();
+            auto fields = body.getFields();
 
-            for (auto x : ciao) {
-                std::cout << "Letto field: " << x << std::endl;
-            }
+            for (auto x : fields) std::cout << "Letto field: " << x << std::endl;
 
             std::cout << "Letto tutto il messaggio!" << std::endl;
 
             // reset della sessione
             reset();
         } else {
-            // TODO: cancellare il file
-            std::cout << "Errore: " << ec.message() << std::endl;
+            // leggo altro body
+            readBody();
         }
     }
 }
