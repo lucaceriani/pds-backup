@@ -25,6 +25,12 @@ void MessageBuilder::setSessionId(std::string sessionId) {
     sid = sessionId;
 }
 
+void MessageBuilder::buildWithFile(std::string path, std::size_t fileSize) {
+    mCode = Protocol::MessageCode::fileUpload;
+    bodyLength = path.length() + fileSize + 1;  // aggiungo un perche' e' il separatore
+    fields.push_back(path + '\0');
+};
+
 std::string MessageBuilder::buildStr() {
     std::stringstream msg;
 

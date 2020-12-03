@@ -151,20 +151,18 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
 
 void Session::doRead() {
     // comincio la lettura dall'header, si occupera' lui di far partire la lettura del body
-    try {
-        readHeader();
-    } catch (...) {
-        std::cout << "catch base exception" << std::endl;
-        socket.write_some(boost::asio::buffer("ciao", 4));
-    }
+    readHeader();
 }
 
 void Session::doTheStuffAndReply() {
+    // TODO da finire
+
     // prendo le informazioni che mi servono dal body e dall'header
     MessageBuilder msg;
-    msg.addField("Primo field");
-    msg.addField("Secondo field bellissimo!");
-    msg.setMessageCode(Protocol::MessageCode::ok);
+    // msg.addField("Primo field");
+    // msg.addField("Secondo field bellissimo!");
+    // msg.setMessageCode(Protocol::MessageCode::ok);
+    msg.buildWithFile("bellissimo file path.jpg", 10000);
     std::cout << "Messaggio: " + msg.buildStr() << std::endl;
 }
 

@@ -14,6 +14,10 @@ class MessageBuilder {
     void setMessageCode(Protocol::MessageCode m);
     void setSessionId(std::string sessionId);
 
+    // ricordarsi di impostatre il sessionId
+    // funzione che imposta il file, quandi si chiama poi build si ottiene la prima parte del messaggio, senza file
+    void buildWithFile(std::string path, std::size_t fileSize);
+
     // crea la stringa da inviare
     std::vector<char> build();
     std::string buildStr();
