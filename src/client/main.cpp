@@ -43,21 +43,22 @@ int main(int argc, char *argv[]) {
         // sockstream << msg << '\0' << msg2;
         sockstream.flush();
 */
-        boost::asio::io_service io_service;
-        tcp::resolver resolver(io_service);
+        boost::asio::io_context io_context;
+        tcp::resolver resolver(io_context);
         tcp::resolver::query query(tcp::v4(), "localhost", "1234");
         tcp::resolver::iterator iterator = resolver.resolve(query);
 
         std::string request;
-        tcp::socket s(io_service);
+        tcp::socket s(io_context);
         s.connect(*iterator);
 
-        // std::cout << "Enter message: ";
+        std::cout << "Invio primo messaggio" << std::endl;
         // char request[max_length];
         request = "0001M010________________________0000000000000013Ciao come va?";
         boost::asio::write(s, boost::asio::buffer(request.data(), request.length()));
 
         // esempio invio file
+        std::cout << "Invio secondo messaggio" << std::endl;
         request = "0001M021______mess con file_____0000000000120393fileBelissimo.jpg";
         request += '\0';
         boost::asio::write(s, boost::asio::buffer(request, request.length()));
@@ -71,25 +72,25 @@ int main(int argc, char *argv[]) {
         }
         fp.close();
 
+        std::cout << "Invio terzo messaggio" << std::endl;
         // esempio invio altro messaggio senza file
         request = "0001M010______secondo mess______0000000000000013Inseriscodati";
         boost::asio::write(s, boost::asio::buffer(request.data(), request.length()));
 
-        // std::cout.write(request.data(), 50);
-        // std::cout << std::endl;
+        std::string reply;
+        int i = 3;
+        while (i-- > 0) {
+            std::cout << "lettura " << 3 - i << std::endl;
+            std::size_t len = boost::asio::read(s, boost::asio::buffer(reply, 8192));
+            std::cout.write(reply.c_str(), len);
+            std::cout << std::endl;
+        }
 
-        // std::this_thread::sleep_for(std::chrono::seconds(2));
+        std::cout << "lettura finita" << std::endl;
 
-        // boost::asio::write(s, boost::asio::buffer(request.data() + 50, request.length() - 50));
-        // std::cout.write(request.data() + 50, request.length() - 50);
-        // std::cout << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(2));
 
         s.close();
-
-        // char reply[1024];
-        // //size_t reply_length = s.read_some(boost::asio::buffer(reply));
-        // sockstream >> reply;
-        // std::cout << "Reply is: " << reply << std::endl;
 
     } catch (std::exception &e) {
         std::cerr << "Exception: " << e.what() << "\n";

@@ -14,6 +14,7 @@ class Header {
     bool parse(std::vector<char> rawHeader);
     bool isValid();
     std::string getSessionId();
+    Protocol::MessageCode getMessageCode();
     unsigned long long getBodyLenght();
 
     void clear();

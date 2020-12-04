@@ -9,6 +9,7 @@
 #include <locale>
 #include <string>
 
+#include "../shared/Checksum.hpp"
 #include "../shared/MessageBuilder.hpp"
 
 using namespace PDSBackup;
@@ -120,6 +121,7 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
             std::cout << "Letto tutto il messaggio!" << std::endl;
 
             // reset della sessione, pronti per accettare un nuovbo header
+            doTheStuffAndReply();
             reset();
         } else {
             // continuo a leggere
@@ -155,15 +157,51 @@ void Session::doRead() {
 }
 
 void Session::doTheStuffAndReply() {
-    // TODO da finire
+    using MC = Protocol::MessageCode;
+    MC mc = header.getMessageCode();
 
-    // prendo le informazioni che mi servono dal body e dall'header
-    MessageBuilder msg;
-    // msg.addField("Primo field");
-    // msg.addField("Secondo field bellissimo!");
-    // msg.setMessageCode(Protocol::MessageCode::ok);
-    msg.buildWithFile("bellissimo file path.jpg", 10000);
-    std::cout << "Messaggio: " + msg.buildStr() << std::endl;
+    if (mc == MC::loginRequest) {
+        // pass
+        replyOk();
+
+    } else if (mc == MC::loginCredentials) {
+        // pass
+
+    } else if (mc == MC::fileProbe) {
+        std::string sentPath = body.getFields()[0];
+        std::string sentChecksum = body.getFields()[1];
+
+        std::string myChecksum = Checksum::md5(getUserPath(sentPath));
+
+        if (myChecksum == sentChecksum) {
+            replyOk();
+        } else {
+            replyError(MC::errorFileNotFound, sentPath);
+        }
+
+    } else if (mc == MC::fileUpload) {
+        // pass
+        // se siamo qui in teoria il file e' stato caricato correttamente
+        replyOk();
+
+    } else if (mc == MC::fileDelete) {
+        std::string sentPath = body.getFields()[0];
+
+        if (boost::filesystem::remove(getUserPath(sentPath))) {
+            replyOk();
+        } else {
+            replyError(MC::errorFileNotFound, sentPath);
+        }
+
+    } else if (mc == MC::folderDelete) {
+        std::string sentPath = body.getFields()[0];
+
+        if (boost::filesystem::remove_all(getUserPath(sentPath)) > 0) {
+            replyOk();
+        } else {
+            replyError(MC::errorFileNotFound, sentPath);
+        }
+    }
 }
 
 std::string Session::printLen(std::vector<char> s, unsigned long long len) {
@@ -180,4 +218,23 @@ void Session::reset(bool readNext) {
     header.clear();
 
     if (readNext) doRead();
+}
+std::string Session::getUserPath(std::string relPath) {
+    boost::filesystem::path rp(relPath);
+    boost::filesystem::path userFolder("__ricevuti/");
+    return (userFolder / rp).string();
+}
+
+void Session::replyOk(std::string body) {
+    replyError(Protocol::MessageCode::ok, body);
+}
+
+void Session::replyError(Protocol::MessageCode e, std::string body) {
+    MessageBuilder msg;
+    msg.setMessageCode(e);
+    if (body.length() > 0) msg.addField(body);
+    std::cout << "Rispondo "
+              << (e == Protocol::MessageCode::ok ? "OK" : "ERROR")
+              << " con body: '" << body << "'" << std::endl;
+    boost::asio::write(socket, boost::asio::buffer(msg.buildStr()));
 }

@@ -19,6 +19,10 @@ std::string Header::getSessionId() {
     return sessionId;
 }
 
+Protocol::MessageCode Header::getMessageCode() {
+    return messageCode;
+}
+
 bool Header::isValid() {
     return valid;
 }
