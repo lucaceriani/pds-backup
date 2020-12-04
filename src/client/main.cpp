@@ -9,16 +9,17 @@
 //
 
 #include <boost/asio.hpp>
+#include <boost/filesystem.hpp>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <boost/filesystem.hpp>
+
 
 #include "FileWatcher.hpp"
-#include "MessageBuilder.hpp"
-//#include "../shared/Checksum.hpp"
+#include "../shared/MessageBuilder.hpp"
+#include "../shared/Checksum.hpp"
 
 
 using boost::asio::ip::tcp;
@@ -46,12 +47,9 @@ int main(int argc, char *argv[]) {
 
     // Sezione per il login
 
-
-
-    std::string notAuthenticatedId = "000000000000000000000000";
-    std::string sessionId = "111122223333444455556666"; //fake session Id
-    MessageBuilder mb;
+    PDSBackup::MessageBuilder mb;
     std::string message;
+    std::string sessionId = "000011112222333344445555"; //fake value of sessionId
 
     /*
     // Fase di login (aggiungere le risposte del server e i controlli)
@@ -115,88 +113,59 @@ int main(int argc, char *argv[]) {
 
     FileWatcher fw{argv[3], std::chrono::milliseconds(5000)};
 
-    fw.start([&mb, &message, &sessionId, &sockstream] (std::string path_to_watch, FileStatus status) -> void {
+    fw.start([&mb, &message, &sessionId, &s] (std::string path_to_watch, FileStatus status) -> void {
 
         switch(status) {
             case FileStatus::created: {
                 std::cout << "File created: " << path_to_watch << '\n';
                 // Codice per l' upload del file creato sul server
-
-
-                mb.setCode(MessageType::fileUpload);
+                mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileUpload);
                 mb.setSessionId(sessionId);
-                mb.setBodyLen(std::to_string(path_to_watch.length() + boost::filesystem::file_size(path_to_watch) + 1));
-                mb.setPath(path_to_watch);
-                message = mb.build();
-                sockstream << message;
+                mb.buildWithFile(path_to_watch, boost::filesystem::file_size(path_to_watch));
+                message = mb.buildStr();
+                std::ifstream file;
+                file.open(path_to_watch, std::ios::binary);
                 char buff[8192];
-                std::ifstream fileToSend(path_to_watch, std::ios::binary);
-                while (fileToSend.read(buff, 8192)) {
-                    sockstream << buff;
+                while (file.read(buff, 8192)) {
+                    boost::asio::write(s, boost::asio::buffer(buff, file.gcount()));
                 }
-                sockstream.flush();
-
-                break;
-            }
-            case FileStatus::directoryCreated: {
-                std::cout << "Directory created: " << path_to_watch << '\n';
-                // Codice per l' upload di una sottocartella della directory principale
-
-                mb.setCode(MessageType::directoryUpload);  // In realtà non viene fatto un upload effettivo, si crea solo la cartella sul server al path corrispondente
-                mb.setSessionId(sessionId);
-                mb.setBodyLen(std::to_string(path_to_watch.length()));
-                mb.setPath(path_to_watch);
-                message = mb.build();
-                sockstream << message;
-                sockstream.flush();
-
+                file.close();
                 break;
             }
             case FileStatus::modified:{
                 std::cout << "File modified: " << path_to_watch << '\n';
                 // Codice per la modifica di un file sul server (come upload del file poi il server sovrascrive)
-
-                mb.setCode(MessageType::fileUpload);
+                mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileUpload);
                 mb.setSessionId(sessionId);
-                mb.setBodyLen(std::to_string(path_to_watch.length() + boost::filesystem::file_size(path_to_watch) + 1));
-                mb.setPath(path_to_watch);
-                message = mb.build();
-                sockstream << message;
+                mb.buildWithFile(path_to_watch, boost::filesystem::file_size(path_to_watch));
+                message = mb.buildStr();
+                std::ifstream file;
+                file.open(path_to_watch, std::ios::binary);
                 char buff[8192];
-                std::ifstream fileToSend(path_to_watch, std::ios::binary);
-                while(fileToSend.read(buff,8192)){
-                    sockstream << buff;
+                while (file.read(buff, 8192)) {
+                    boost::asio::write(s, boost::asio::buffer(buff, file.gcount()));
                 }
-                sockstream.flush();
-
+                file.close();
                 break;
             }
             case FileStatus::erased: {
                 std::cout << "File erased: " << path_to_watch << '\n';
                 // Codice per l' eliminazione di un file dal server
-
-                mb.setCode(MessageType::fileDelete);
+                mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileDelete);
                 mb.setSessionId(sessionId);
-                mb.setBodyLen(std::to_string(path_to_watch.length()));
-                mb.setPath(path_to_watch);
-                message = mb.build();
-                sockstream << message;
-                sockstream.flush();
-
+                mb.addField(path_to_watch);
+                message = mb.buildStr();
+                boost::asio::write(s, boost::asio::buffer(message, message.length()));
                 break;
             }
             case FileStatus::directoryErased: {
                 std::cout << "Directory erased: " << path_to_watch << '\n';
                 // Codice per l' eliminazione di una cartella dal server
-
-                mb.setCode(MessageType::directoryDelete);
+                mb.setMessageCode(PDSBackup::Protocol::MessageCode::folderDelete);
                 mb.setSessionId(sessionId);
-                mb.setBodyLen(std::to_string(path_to_watch.length()));
-                mb.setPath(path_to_watch);
-                message = mb.build();
-                sockstream << message;
-                sockstream.flush();
-
+                mb.addField(path_to_watch);
+                message = mb.buildStr();
+                boost::asio::write(s, boost::asio::buffer(message, message.length()));
                 break;
             }
             default:
