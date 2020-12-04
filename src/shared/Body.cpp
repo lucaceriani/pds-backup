@@ -58,12 +58,6 @@ bool Body::push(std::vector<char> buffer, std::size_t readLen) {
         bodyBuffStorage.push_back(buffer[i]);
     }
 
-    // controllo che il push non superi il valore di bodylenght dell'header
-    if (bodyBuffStorage.size() > header.getBodyLenght()) {
-        throw Exception::invalidTransmission();
-        return false;
-    }
-
     return true;
 }
 
@@ -96,4 +90,10 @@ bool Body::parseWithBody(std::vector<char> buffer) {
 
 std::vector<std::string> Body::getFields() {
     return fields;
+}
+
+void Body::clear() {
+    header.clear();
+    fields.clear();
+    bodyBuffStorage.clear();
 }

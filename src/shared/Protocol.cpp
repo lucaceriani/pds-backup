@@ -12,11 +12,11 @@ const unsigned int Protocol::maxBodyFields = 2;  // quanti campi "testuali" poss
 const unsigned int Protocol::bufferSize = 8192;
 
 // lenghts
-const unsigned int Protocol::messageCodeLenght = 3;
-const unsigned int Protocol::versionLenght = 4;
-const unsigned int Protocol::headerLenght = 48;
-const unsigned int Protocol::headerBodyLenght = 16;
-const unsigned int Protocol::sessionIdLenght = 24;
+const unsigned int Protocol::messageCodeLength = 3;
+const unsigned int Protocol::versionLength = 4;
+const unsigned int Protocol::headerLength = 48;
+const unsigned int Protocol::headerBodyLength = 16;
+const unsigned int Protocol::sessionIdLength = 24;
 
 // offsets
 const unsigned int Protocol::messageCharOffset = 4;

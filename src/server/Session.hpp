@@ -21,15 +21,19 @@ class Session : public std::enable_shared_from_this<Session> {
    public:
     Session(tcp::socket s);
 
-    // Metodo da hciamare per cominciare la lettura
+    // Metodo da chiamare per cominciare la lettura
     void doRead();
+
+    ~Session() {
+        std::cout << "Fine sessione\n" + std::string(80, '-') << std::endl;
+    }
 
    private:
     Header header;
     Body body;
 
     std::vector<char> rawHeader;
-    std::vector<char> strBufBody;
+    std::vector<char> bodyBuffer;
     unsigned long long bodyReadSoFar;
 
     tcp::socket socket;
@@ -43,11 +47,13 @@ class Session : public std::enable_shared_from_this<Session> {
     void readBody();
 
     // Si occupa di leggere il body finché non ha finito
-    // TODO controllo della lunghezza del body!
     void handleReadBody(boost::system::error_code ec, std::size_t readLen);
 
-    // Funzione chiamata dopo aver letto correttamente l'header
-    unsigned long long checkHeader(std::size_t lenght);
+    // Fa l'azione richiesta dal server (tranne salvare il file) e risponde
+    void doTheStuffAndReply();
+
+    // Imposta certi valori alle impostazioni iniziali
+    void reset(bool readNext = true);
 
     // funzione che stampa un certo numero di caratteri
     std::string printLen(std::vector<char> s, unsigned long long len);

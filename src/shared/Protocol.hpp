@@ -15,12 +15,12 @@ class Protocol {
     static const char separationChar;
     static const char messageChar;
     static const unsigned int maxBodyFields;
-    static const unsigned int messageCodeLenght;
-    static const unsigned int versionLenght;
+    static const unsigned int messageCodeLength;
+    static const unsigned int versionLength;
     static const unsigned int bufferSize;
-    static const unsigned int headerLenght;
-    static const unsigned int headerBodyLenght;
-    static const unsigned int sessionIdLenght;
+    static const unsigned int headerLength;
+    static const unsigned int headerBodyLength;
+    static const unsigned int sessionIdLength;
     static const unsigned int sessionIdOffset;
     static const unsigned int bodyLenghtOffset;
     static const unsigned int messageCharOffset;
