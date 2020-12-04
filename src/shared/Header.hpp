@@ -15,6 +15,7 @@ class Header {
     bool isValid();
     std::string getSessionId();
     unsigned long long getBodyLenght();
+    Protocol::MessageCode getCode();
 
     void clear();
 

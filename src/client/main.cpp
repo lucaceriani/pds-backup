@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 
     tcp::socket s(io_service);
     s.connect(*iterator);
-    tcp::iostream sockstream(tcp::resolver::query{argv[1], argv[2]});
+    //tcp::iostream sockstream(tcp::resolver::query{argv[1], argv[2]});
 
 
     // Sezione per il login
@@ -51,24 +51,31 @@ int main(int argc, char *argv[]) {
     std::string message;
     std::string sessionId = "000011112222333344445555"; //fake value of sessionId
 
-    /*
+
+    Client c = Client(s);  //Mi da errore, sbaglio qualcosa nell' inizializzarlo (???).
+
+
+
     // Fase di login (aggiungere le risposte del server e i controlli)
 
     do{
-    // Richiesta di login al server
-    mb.setCode(MessageType::loginRequest);
-    mb.setSessionId(notAuthenticatedId);  // SessionId provvisorio
-    mb.setBodyLen("0");
-    message = mb.build();
-    sockstream << message;
-    sockstream.flush();
+        // Richiesta di login al server
+        mb.setMessageCode(PDSBackup::Protocol::MessageCode::loginRequest);
+        mb.setSessionId(sessionId);
+        message = mb.buildStr();
+        boost::asio::write(s, boost::asio::buffer(message, message.length()));
+        c.readHeader();
+        PDSBackup::Protocol::MessageCode code = c.getMessageCode();
 
-    // Server invia risposta
-    // Controlla header risposta
-    // Se risposta "ok/procedi" -> procedi all' inserimento delle credenziali
-    // Se risposta negativa riformula la richiesta (ciclo do-while)
+        // continuare...
+
+        // Server invia risposta
+        // Controlla header risposta
+        // Se risposta "ok/procedi" -> procedi all' inserimento delle credenziali
+        // Se risposta negativa riformula la richiesta (ciclo do-while)
     }while(1);
 
+     /*
     do{
     // Invio credenziali
     std::string user;
@@ -119,10 +126,12 @@ int main(int argc, char *argv[]) {
             case FileStatus::created: {
                 std::cout << "File created: " << path_to_watch << '\n';
                 // Codice per l' upload del file creato sul server
+
                 mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileUpload);
                 mb.setSessionId(sessionId);
                 mb.buildWithFile(path_to_watch, boost::filesystem::file_size(path_to_watch));
                 message = mb.buildStr();
+                boost::asio::write(s, boost::asio::buffer(message, message.length()));
                 std::ifstream file;
                 file.open(path_to_watch, std::ios::binary);
                 char buff[8192];
@@ -139,6 +148,7 @@ int main(int argc, char *argv[]) {
                 mb.setSessionId(sessionId);
                 mb.buildWithFile(path_to_watch, boost::filesystem::file_size(path_to_watch));
                 message = mb.buildStr();
+                boost::asio::write(s, boost::asio::buffer(message, message.length()));
                 std::ifstream file;
                 file.open(path_to_watch, std::ios::binary);
                 char buff[8192];

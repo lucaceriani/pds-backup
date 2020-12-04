@@ -84,3 +84,7 @@ void Header::clear() {
     sessionId.clear();
     bodyLenght = 0;
 }
+
+Protocol::MessageCode Header::getCode(){
+    return messageCode;
+}
