@@ -14,10 +14,10 @@
 #include <cstring>
 #include <iostream>
 #include <fstream>
-#include <iomanip>
 
 
 #include "FileWatcher.hpp"
+#include "Client.hpp"
 #include "../shared/MessageBuilder.hpp"
 #include "../shared/Checksum.hpp"
 
@@ -158,6 +158,10 @@ int main(int argc, char *argv[]) {
                 boost::asio::write(s, boost::asio::buffer(message, message.length()));
                 break;
             }
+            case FileStatus::directoryCreated:
+                std::cout << "Directory created: " << path_to_watch << '\n';
+                // Nessuna comunicazione col server in questo caso
+                break;
             case FileStatus::directoryErased: {
                 std::cout << "Directory erased: " << path_to_watch << '\n';
                 // Codice per l' eliminazione di una cartella dal server

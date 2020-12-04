@@ -1,4 +1,3 @@
-#include <boost/filesystem.hpp>
 #include <chrono>
 #include <thread>
 #include <unordered_map>
@@ -37,10 +36,6 @@ void FileWatcher::start(const std::function<void(std::string, FileStatus)> &acti
                 it++;
             }
         }
-        // N.B.: per gestire il renaming sarebbe necessario usare Inotify (ma va solo in ambiente Linux) oppure
-        // gestire una tabella di hash ma rallenterebbe molto il programma (fonte: gruppo Telegram); in ogni caso
-        // sul testo del progetto si parla solo di add/erase/change e non di rename quindi non dovrebbe essere
-        // un controllo richiesto dalle specifiche;
 
         // Controlla se un file è stato creato o modificato
         for (auto &file : boost::filesystem::recursive_directory_iterator(boost::filesystem::path(path_to_watch))) {

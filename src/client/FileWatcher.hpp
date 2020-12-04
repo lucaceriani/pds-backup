@@ -9,7 +9,7 @@
 #include <tuple>
 
 //Status del FileWatcher
-enum class FileStatus {created, modified, erased, directoryErased, directoryCreated};
+enum class FileStatus {created, modified, erased, directoryCreated, directoryErased};
 
 
 class FileWatcher {
