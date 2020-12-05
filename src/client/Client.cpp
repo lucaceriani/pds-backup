@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(tcp::socket socket) : socket(std::move(socket)){    // Costruttore
+Client::Client(tcp::socket s) : socket(std::move(s)){    // Costruttore
     bodyReadSoFar = 0;
     rawHeader.resize(PDSBackup::Protocol::headerLength);
 }
@@ -54,4 +54,29 @@ void Client::reset(){
 
     body.clear();
     header.clear();
+}
+
+void Client::manageErrors(){
+    switch(header.getCode()){
+        case PDSBackup::Protocol::MessageCode::errorGeneric:
+            std::cout << "Generic error." << std::endl;
+            break;
+        case PDSBackup::Protocol::MessageCode::errorLogin:
+            std::cout << "Login error." << std::endl;
+            break;
+        case PDSBackup::Protocol::MessageCode::errorFailedUpload:
+            std::cout << "Can not upload file." << std::endl;
+            break;
+        case PDSBackup::Protocol::MessageCode::errorFileNotFound:
+            std::cout << "File not found." << std::endl;
+            break;
+        case PDSBackup::Protocol::MessageCode::errorTransmission:
+            std::cout << "Transmission error." << std::endl;
+            break;
+        case PDSBackup::Protocol::MessageCode::errorProtocol:
+            std::cout << "Protocol error." << std::endl;
+            break;
+        default:
+            std::cout << "Unknown error." << std::endl;
+    }
 }

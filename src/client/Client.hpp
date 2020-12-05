@@ -14,12 +14,13 @@ using boost::asio::ip::tcp;
 
 class Client{
 public:
-    Client(tcp::socket socket);
+    Client(tcp::socket s);
     void readHeader();
     void readBody();
     PDSBackup::Protocol::MessageCode getMessageCode();
     std::string printLen(std::vector<char> s);
     void reset();
+    void manageErrors();
 private:
     boost::asio::ip::tcp::socket socket;
     std::ofstream stream;

@@ -18,8 +18,8 @@
 
 #include "FileWatcher.hpp"
 #include "Client.hpp"
-#include "../shared/MessageBuilder.hpp"
-#include "../shared/Checksum.hpp"
+#include "../shared/_include.hpp"
+
 
 
 using boost::asio::ip::tcp;
@@ -35,26 +35,20 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    boost::asio::io_service io_service;
-    tcp::resolver resolver(io_service);
-    tcp::resolver::query query(tcp::v4(), argv[1], argv[2]);
-    tcp::resolver::iterator iterator = resolver.resolve(query);
+    boost::asio::io_context io_context;
+    tcp::socket s(io_context);
+    tcp::resolver resolver(io_context);
+    boost::asio::connect(s, resolver.resolve(argv[1], argv[2]));
 
-    tcp::socket s(io_service);
-    s.connect(*iterator);
-    //tcp::iostream sockstream(tcp::resolver::query{argv[1], argv[2]});
-
-
-    // Sezione per il login
 
     PDSBackup::MessageBuilder mb;
+    PDSBackup::Protocol::MessageCode code;
     std::string message;
+    std::string pathExample = "testProbe.txt";
     std::string sessionId = "000011112222333344445555"; //fake value of sessionId
 
 
-    Client c = Client(s);  //Mi da errore, sbaglio qualcosa nell' inizializzarlo (???).
-
-
+    Client c = Client(std::move(s));
 
     // Fase di login (aggiungere le risposte del server e i controlli)
 
@@ -65,68 +59,66 @@ int main(int argc, char *argv[]) {
         message = mb.buildStr();
         boost::asio::write(s, boost::asio::buffer(message, message.length()));
         c.readHeader();
-        PDSBackup::Protocol::MessageCode code = c.getMessageCode();
-
-        // continuare...
-
-        // Server invia risposta
-        // Controlla header risposta
-        // Se risposta "ok/procedi" -> procedi all' inserimento delle credenziali
-        // Se risposta negativa riformula la richiesta (ciclo do-while)
+        if(c.getMessageCode() == PDSBackup::Protocol::MessageCode::ok){
+            std::cout << "Login authorized." << std::endl;
+            break;
+        }
+        c.manageErrors();
+        c.reset();
     }while(1);
 
-     /*
+
     do{
     // Invio credenziali
-    std::string user;
-    std::string pwd;
-    std::cout << "Inserisci username: " << std::endl;
-    std::cin >> user;
-    std::cout << "Inserisci password: " << std::endl;
-    std::cin >> pwd;
-    mb.setCode(MessageType::loginCredentials);
-    mb.setSessionId(sessionId);
-    mb.setUsername(user);
-    mb.setPassword(pwd);
-    mb.setBodyLen(std::to_string(user.length() + pwd.length() + 1));
-    message = mb.build();
-    sockstream << message;
-    sockstream.flush();
-
-    // Server invia risposta
-    // Controlla header risposta
-    // Se risposta "ok/procedi" passa alla fase di probe
-    // Se rispost negativa reinserisci le credenziali corrette (do-while)
+        std::string user;
+        std::string pwd;
+        std::cout << "Inserisci username: " << std::endl;
+        std::cin >> user;
+        std::cout << "Inserisci password: " << std::endl;
+        std::cin >> pwd;
+        mb.setMessageCode(PDSBackup::Protocol::MessageCode::loginCredentials);
+        mb.setSessionId(sessionId);
+        mb.addField(user);
+        mb.addField(pwd);
+        message = mb.buildStr();
+        boost::asio::write(s, boost::asio::buffer(message, message.length()));
+        c.readHeader();
+        if(c.getMessageCode() == PDSBackup::Protocol::MessageCode::ok){
+            std::cout << "Login ok." << std::endl;
+            break;
+        }
+        c.manageErrors();
+        c.reset();
     }while(1);
-    */
 
 
 
-    /*
-    // Probe del file (usato all' avvio del client dopo l' autenticazione, non ho ancora deciso dove metterlo)
 
-    mb.setCode(MessageType::fileProbe);
+
+    // Probe del file (da mettere probabilmente nel costruttore del fileWatcher:
+    // quando creo paths_ controllo anche che i file siano già presenti nel server altrimenti faccio un upload)
+
+    mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileProbe);
     mb.setSessionId(sessionId);
-    mb.setBodyLen(std::to_string(path_to_watch.length() + PDSBackup::Checksum::md5().length()));
-    mb.setPath(path_to_watch);
-    mb.setChecksum(PDSBackup::Checksum::md5("")); //da inserire il percorso del file da verificare
-    message = mb.build();
-    sockstream << message;
-    sockstream.flush();
+    mb.addField(pathExample);
+    mb.addField(PDSBackup::Checksum::md5(pathExample));
+    message = mb.buildStr();
+    boost::asio::write(s, boost::asio::buffer(message, message.length()));
+    c.readHeader();
+    c.manageErrors();
+    c.reset();
 
-    */
 
     //FileWatcher
 
     FileWatcher fw{argv[3], std::chrono::milliseconds(5000)};
 
-    fw.start([&mb, &message, &sessionId, &s] (std::string path_to_watch, FileStatus status) -> void {
+    fw.start([&mb, &message, &sessionId, &s, &c] (std::string path_to_watch, FileStatus status) -> void {
 
         switch(status) {
             case FileStatus::created: {
                 std::cout << "File created: " << path_to_watch << '\n';
                 // Codice per l' upload del file creato sul server
-
                 mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileUpload);
                 mb.setSessionId(sessionId);
                 mb.buildWithFile(path_to_watch, boost::filesystem::file_size(path_to_watch));
@@ -139,6 +131,13 @@ int main(int argc, char *argv[]) {
                     boost::asio::write(s, boost::asio::buffer(buff, file.gcount()));
                 }
                 file.close();
+                // Controllo risposta server
+                c.readHeader();
+                if(c.getMessageCode() == PDSBackup::Protocol::MessageCode::ok)
+                    std::cout << "New file upload done." << std::endl;
+                else
+                    c.manageErrors();
+                c.reset();
                 break;
             }
             case FileStatus::modified:{
@@ -156,6 +155,13 @@ int main(int argc, char *argv[]) {
                     boost::asio::write(s, boost::asio::buffer(buff, file.gcount()));
                 }
                 file.close();
+                // Controllo risposta server
+                c.readHeader();
+                if(c.getMessageCode() == PDSBackup::Protocol::MessageCode::ok)
+                    std::cout << "Changed file upload done." << std::endl;
+                else
+                    c.manageErrors();
+                c.reset();
                 break;
             }
             case FileStatus::erased: {
@@ -166,6 +172,12 @@ int main(int argc, char *argv[]) {
                 mb.addField(path_to_watch);
                 message = mb.buildStr();
                 boost::asio::write(s, boost::asio::buffer(message, message.length()));
+                c.readHeader();
+                if(c.getMessageCode() == PDSBackup::Protocol::MessageCode::ok)
+                    std::cout << "File correctly erased from the server." << std::endl;
+                else
+                    c.manageErrors();
+                c.reset();
                 break;
             }
             case FileStatus::directoryCreated:
@@ -180,6 +192,12 @@ int main(int argc, char *argv[]) {
                 mb.addField(path_to_watch);
                 message = mb.buildStr();
                 boost::asio::write(s, boost::asio::buffer(message, message.length()));
+                c.readHeader();
+                if(c.getMessageCode() == PDSBackup::Protocol::MessageCode::ok)
+                    std::cout << "Directory correctly erased from the server." << std::endl;
+                else
+                    c.manageErrors();
+                c.reset();
                 break;
             }
             default:
