@@ -11,7 +11,7 @@ SRC_CLIENT = $(wildcard src/client/*.cpp)
 OBJ_SERVER = $(SRC_SERVER:%.cpp=out/%.o) $(SRC_SHARED:%.cpp=out/%.o)
 OBJ_CLIENT = $(SRC_CLIENT:%.cpp=out/%.o) $(SRC_SHARED:%.cpp=out/%.o)
 
-BOOST      = -Iboost/include -Lboost/lib -lboost_system -lboost_filesystem
+BOOST      = -Iboost/include -Lboost/lib -lboost_system -lboost_filesystem -lboost_random
 OSSL       = -lssl -lcrypto
 LDFLAGS    = $(BOOST) $(OSSL)
 

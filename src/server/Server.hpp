@@ -5,6 +5,7 @@
 #include <string>
 
 #include "Session.hpp"
+#include "UserCollection.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -13,6 +14,7 @@ namespace PDSBackup {
 class Server {
    public:
     Server(boost::asio::io_context &io_context, short port);
+    UserCollection users;
 
    private:
     tcp::acceptor acceptor;

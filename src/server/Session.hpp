@@ -9,9 +9,7 @@
 #include <vector>
 
 #include "../shared/_include.hpp"
-
-// per stampare i char come hex
-#define HEX(x) std::setw(2) << std::setfill('0') << std::hex << (((int)(x)) & 0xff)
+#include "User.hpp"
 
 using boost::asio::ip::tcp;
 
