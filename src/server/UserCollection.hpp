@@ -18,11 +18,10 @@ class UserCollection {
 
    private:
     std::mutex m;
-    std::unordered_map<std::string, std::string> sidByName;
+    std::unordered_map<std::string, SessionId> sessionIdMap;
     std::unordered_map<std::string, User> userByName;
 
     std::optional<User> getUserByName(std::string uname, bool isAtomic = true);
-    std::optional<std::string> getSidByName(std::string uname, bool isAtomic = true);
 };
 
 }  // namespace PDSBackup

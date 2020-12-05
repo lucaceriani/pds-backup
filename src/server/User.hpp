@@ -12,13 +12,14 @@ class SessionId {
     SessionId();
     std::string sessionId;
     std::string expiresAt;
+    std::string owner;
     bool isExpired();
 };
 
 class User {
    public:
-    User();
-    User(std::string sid, std::string expdate, std::string uname, std::string salt, std::string hpass);
+    User() {}
+    User(std::string uname, std::string salt, std::string hpass);
 
     // getters
     std::string getSessionId();
@@ -38,6 +39,6 @@ class User {
     std::string userHPassword;
     std::string userSalt;
 
-    SessionId generateSessionId();
+    SessionId generateSessionId(std::string user);
 };
 }  // namespace PDSBackup
