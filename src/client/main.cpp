@@ -42,18 +42,16 @@ int main(int argc, char *argv[]) {
 
 
     PDSBackup::MessageBuilder mb;
-    PDSBackup::Protocol::MessageCode code;
     std::string message;
-    std::string pathExample = "testProbe.txt";
     std::string sessionId = "000011112222333344445555"; //fake value of sessionId
 
 
     Client c = Client(std::move(s));
 
-    // Fase di login (aggiungere le risposte del server e i controlli)
+    // Fase di login
 
-    do{
-        // Richiesta di login al server
+    // Richiesta di login al server
+    while(1){
         mb.setMessageCode(PDSBackup::Protocol::MessageCode::loginRequest);
         mb.setSessionId(sessionId);
         message = mb.buildStr();
@@ -61,15 +59,15 @@ int main(int argc, char *argv[]) {
         c.readHeader();
         if(c.getMessageCode() == PDSBackup::Protocol::MessageCode::ok){
             std::cout << "Login authorized." << std::endl;
+            c.reset();
             break;
         }
         c.manageErrors();
         c.reset();
-    }while(1);
+    }
 
-
-    do{
     // Invio credenziali
+    while(1){
         std::string user;
         std::string pwd;
         std::cout << "Inserisci username: " << std::endl;
@@ -85,40 +83,66 @@ int main(int argc, char *argv[]) {
         c.readHeader();
         if(c.getMessageCode() == PDSBackup::Protocol::MessageCode::ok){
             std::cout << "Login ok." << std::endl;
+            c.reset();
             break;
         }
         c.manageErrors();
         c.reset();
-    }while(1);
+    }
 
 
+    // FileWatcher
 
+    FileWatcher fw{argv[3], std::chrono::milliseconds(5000)}; // Crea e inizializza il FileWatcher
 
+    // Fase di probe: si verifica che i file catalogati dal FileWatcher siano già presenti sul server, altrimenti si fa l'upload
 
-    // Probe del file (da mettere probabilmente nel costruttore del fileWatcher:
-    // quando creo paths_ controllo anche che i file siano già presenti nel server altrimenti faccio un upload)
+    std::vector<std::string> toBeChecked = fw.getPaths_();
+    auto it = toBeChecked.begin();
+    while(it != toBeChecked.end()){
+        mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileProbe);
+        mb.setSessionId(sessionId);
+        mb.addField(*it);
+        mb.addField(PDSBackup::Checksum::md5(*it));
+        message = mb.buildStr();
+        boost::asio::write(s, boost::asio::buffer(message, message.length()));
+        c.readHeader();
+        if(c.getMessageCode() != PDSBackup::Protocol::MessageCode::ok){
+           if(c.getMessageCode() == PDSBackup::Protocol::MessageCode::errorFileNotFound){
+               std::cout << "File not found in server." << std::endl;
+               // Il file non è presente sul server, lo carico
+               mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileUpload);
+               mb.setSessionId(sessionId);
+               mb.buildWithFile(*it, boost::filesystem::file_size(*it));
+               message = mb.buildStr();
+               boost::asio::write(s, boost::asio::buffer(message, message.length()));
+               std::ifstream file;
+               file.open(*it, std::ios::binary);
+               char buff[8192];
+               while (file.read(buff, 8192)) {
+                   boost::asio::write(s, boost::asio::buffer(buff, file.gcount()));
+               }
+               file.close();
+               // Controllo risposta server
+               c.readHeader();
+               if(c.getMessageCode() == PDSBackup::Protocol::MessageCode::ok)
+                   std::cout << "File upload done." << std::endl;
+               else
+                   c.manageErrors();
+           }else
+               c.manageErrors();
+        }
+        c.reset();
+    }
 
-    mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileProbe);
-    mb.setSessionId(sessionId);
-    mb.addField(pathExample);
-    mb.addField(PDSBackup::Checksum::md5(pathExample));
-    message = mb.buildStr();
-    boost::asio::write(s, boost::asio::buffer(message, message.length()));
-    c.readHeader();
-    c.manageErrors();
-    c.reset();
-
-
-    //FileWatcher
-
-    FileWatcher fw{argv[3], std::chrono::milliseconds(5000)};
+    // Avvio del FileWatcher: inizia a monitorare i cambiamenti della cartella lato client
 
     fw.start([&mb, &message, &sessionId, &s, &c] (std::string path_to_watch, FileStatus status) -> void {
 
         switch(status) {
             case FileStatus::created: {
                 std::cout << "File created: " << path_to_watch << '\n';
-                // Codice per l' upload del file creato sul server
+                // Upload di un nuovo file sul server
                 mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileUpload);
                 mb.setSessionId(sessionId);
                 mb.buildWithFile(path_to_watch, boost::filesystem::file_size(path_to_watch));
@@ -142,7 +166,7 @@ int main(int argc, char *argv[]) {
             }
             case FileStatus::modified:{
                 std::cout << "File modified: " << path_to_watch << '\n';
-                // Codice per la modifica di un file sul server (come upload del file poi il server sovrascrive)
+                // Upload di un file modificato sul server (come upload dei nuovi file ma il server sovrascrive)
                 mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileUpload);
                 mb.setSessionId(sessionId);
                 mb.buildWithFile(path_to_watch, boost::filesystem::file_size(path_to_watch));
@@ -166,7 +190,7 @@ int main(int argc, char *argv[]) {
             }
             case FileStatus::erased: {
                 std::cout << "File erased: " << path_to_watch << '\n';
-                // Codice per l' eliminazione di un file dal server
+                // Eliminazione di un file dal server
                 mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileDelete);
                 mb.setSessionId(sessionId);
                 mb.addField(path_to_watch);
@@ -186,7 +210,7 @@ int main(int argc, char *argv[]) {
                 break;
             case FileStatus::directoryErased: {
                 std::cout << "Directory erased: " << path_to_watch << '\n';
-                // Codice per l' eliminazione di una cartella dal server
+                // Eliminazione di una cartella dal server
                 mb.setMessageCode(PDSBackup::Protocol::MessageCode::folderDelete);
                 mb.setSessionId(sessionId);
                 mb.addField(path_to_watch);

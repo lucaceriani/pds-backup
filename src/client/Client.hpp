@@ -23,7 +23,6 @@ public:
     void manageErrors();
 private:
     boost::asio::ip::tcp::socket socket;
-    std::ofstream stream;
     std::vector<char> rawHeader;
     std::vector<char> rawBody;
     PDSBackup::Header header;

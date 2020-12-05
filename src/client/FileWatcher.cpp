@@ -63,6 +63,17 @@ void FileWatcher::start(const std::function<void(std::string, FileStatus)> &acti
     }
 }
 
+std::vector<std::string> FileWatcher::getPaths_(){
+    std::vector<std::string> tmp;
+    auto it = paths_.begin();
+    while (it != paths_.end()) {
+        if(std::get<1>(it->second).compare("directory") != 0){
+            tmp.push_back(it->first);
+        }
+    }
+    return tmp;
+}
+
 bool FileWatcher::contains(const std::string &key) {
     auto el = paths_.find(key);
     return el != paths_.end();

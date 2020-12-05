@@ -6,7 +6,7 @@ Client::Client(tcp::socket s) : socket(std::move(s)){    // Costruttore
 }
 
 void Client::readHeader() {
-            boost::asio::read(stream, boost::asio::buffer(rawHeader, PDSBackup::Protocol::headerLength),
+            boost::asio::async_read(socket, boost::asio::buffer(rawHeader, PDSBackup::Protocol::headerLength),
 
             [this](boost::system::error_code ec, std::size_t readLen) {
                 if (!ec) {
@@ -48,9 +48,6 @@ std::string Client::printLen(std::vector<char> s) {
 
 void Client::reset(){
     bodyReadSoFar = 0;
-
-    if (stream.is_open())
-        stream.close();
 
     body.clear();
     header.clear();
