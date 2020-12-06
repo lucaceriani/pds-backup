@@ -54,12 +54,12 @@ int main(int argc, char *argv[]) {
 
         std::cout << "Invio primo messaggio" << std::endl;
         // char request[max_length];
-        request = "0001M010________________________0000000000000013Ciao come va?";
+        request = "0001M010________sempre_valido___0000000000000013Ciao come va?";
         boost::asio::write(s, boost::asio::buffer(request.data(), request.length()));
 
         // esempio invio file
         std::cout << "Invio secondo messaggio" << std::endl;
-        request = "0001M021______mess con file_____0000000000120393fileBelissimo.jpg";
+        request = "0001M021________sempre_valido___0000000000120393fileBelissimo.jpg";
         request += '\0';
         boost::asio::write(s, boost::asio::buffer(request, request.length()));
         std::ifstream fp;
@@ -74,22 +74,26 @@ int main(int argc, char *argv[]) {
 
         std::cout << "Invio terzo messaggio" << std::endl;
         // esempio invio altro messaggio senza file
-        request = "0001M010______secondo mess______0000000000000013Inseriscodati";
+        request = "0001M010________sempre_valido___0000000000000013Inseriscodati";
         boost::asio::write(s, boost::asio::buffer(request.data(), request.length()));
 
-        std::string reply;
-        int i = 3;
-        while (i-- > 0) {
-            std::cout << "lettura " << 3 - i << std::endl;
-            std::size_t len = boost::asio::read(s, boost::asio::buffer(reply, 8192));
-            std::cout.write(reply.c_str(), len);
-            std::cout << std::endl;
+        char reply[8192];
+        while (42) {
+            try {
+                std::size_t len = s.read_some(boost::asio::buffer(reply, 8192));
+                std::cout.write(reply, len);
+                std::cout << std::endl;
+            } catch (const boost::system::system_error &e) {
+                break;
+                std::cerr << e.what() << std::endl;
+            }
         }
 
         std::cout << "lettura finita" << std::endl;
+        /***********************************************************************************************
+*/
 
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-
+        // std::this_thread::sleep_for(std::chrono::seconds(2));
         s.close();
 
     } catch (std::exception &e) {

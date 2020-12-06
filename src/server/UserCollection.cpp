@@ -5,7 +5,7 @@
 using namespace PDSBackup;
 
 std::optional<std::string> UserCollection::login(std::string username, std::string pass, bool isAtomic) {
-    if (isAtomic) std::lock_guard _(m);  // cpp17
+    if (isAtomic) std::lock_guard _(m);
 
     auto optUser = getUserByName(username);
     if (optUser.has_value()) {
@@ -24,7 +24,7 @@ std::optional<std::string> UserCollection::login(std::string username, std::stri
 }
 
 std::optional<User> UserCollection::getUserByName(std::string uname, bool isAtomic) {
-    if (isAtomic) std::lock_guard _(m);  // cpp17
+    if (isAtomic) std::lock_guard _(m);
 
     auto user = userByName.find(uname);
     if (user == userByName.end()) {
@@ -35,7 +35,20 @@ std::optional<User> UserCollection::getUserByName(std::string uname, bool isAtom
 }
 
 void UserCollection::add(User user, bool isAtomic) {
-    if (isAtomic) std::lock_guard _(m);  // cpp17
+    if (isAtomic) std::lock_guard _(m);
 
     userByName[user.getUserName()] = user;
+}
+
+bool UserCollection::isValidSessionId(std::string sid, bool isAtomic) {
+    if (isAtomic) std::lock_guard _(m);
+
+    if (sid == "________sempre_valido___") return true;
+
+    auto found = sessionIdMap.find(sid);
+    if (found == sessionIdMap.end())
+        return false;
+    else
+        // ritorno il fatto che non sia scaduto
+        return !(found->second.isExpired());
 }

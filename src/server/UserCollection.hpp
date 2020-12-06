@@ -15,6 +15,7 @@ class UserCollection {
     void add(User user, bool isAtomic = true);
 
     std::optional<std::string> login(std::string name, std::string pass, bool isAtomic = true);
+    bool isValidSessionId(std::string sid, bool isAtomic = true);
 
    private:
     std::mutex m;

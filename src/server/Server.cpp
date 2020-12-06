@@ -30,7 +30,7 @@ void Server::doAccept() {
         if (!ec) {
             std::cout << std::string(80, '-') << "\n";
             std::cout << "Nuova connessione da: " << socket.remote_endpoint().address().to_string() << std::endl;
-            std::make_shared<Session>(std::move(socket))->doRead();
+            std::make_shared<Session>(std::move(socket), users)->doRead();
         }
         doAccept();
     });

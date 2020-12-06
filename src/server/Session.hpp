@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "../shared/_include.hpp"
-#include "User.hpp"
+#include "UserCollection.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -17,7 +17,7 @@ namespace PDSBackup {
 
 class Session : public std::enable_shared_from_this<Session> {
    public:
-    Session(tcp::socket s);
+    Session(tcp::socket s, UserCollection& users);
 
     // Metodo da chiamare per cominciare la lettura
     void doRead();
@@ -38,8 +38,11 @@ class Session : public std::enable_shared_from_this<Session> {
     std::ofstream ofs;
     std::string currFilePath;
 
+    UserCollection& users;
+
     // Legge l'header
     void readHeader();
+    void handleReadHeader(boost::system::error_code ec, std::size_t readLen);
 
     // Legge il body
     void readBody();
