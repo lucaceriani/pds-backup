@@ -35,7 +35,7 @@ clean:
 	@rm -rf out
 
 sc: #start client
-	@export LD_LIBRARY_PATH=LD_LIBRARY_PATH:"$(shell pwd)/boost/lib" && ./out/client
+	@export LD_LIBRARY_PATH=LD_LIBRARY_PATH:"$(shell pwd)/boost/lib" && ./out/client $(sid)
 
 ss: #start server
 	@export LD_LIBRARY_PATH=LD_LIBRARY_PATH:"$(shell pwd)/boost/lib" && ./out/server

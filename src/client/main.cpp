@@ -54,12 +54,16 @@ int main(int argc, char *argv[]) {
 
         std::cout << "Invio primo messaggio" << std::endl;
         // char request[max_length];
-        request = "0001M010________sempre_valido___0000000000000013Ciao come va?";
+        request = "0001M010";
+        request += argv[1];
+        request += "0000000000000013Ciao come va?";
         boost::asio::write(s, boost::asio::buffer(request.data(), request.length()));
 
         // esempio invio file
         std::cout << "Invio secondo messaggio" << std::endl;
-        request = "0001M021________sempre_valido___0000000000120393fileBelissimo.jpg";
+        request = "0001M021";
+        request += argv[1];
+        request += "0000000000120393fileBelissimo.jpg";
         request += '\0';
         boost::asio::write(s, boost::asio::buffer(request, request.length()));
         std::ifstream fp;
@@ -74,7 +78,9 @@ int main(int argc, char *argv[]) {
 
         std::cout << "Invio terzo messaggio" << std::endl;
         // esempio invio altro messaggio senza file
-        request = "0001M010________sempre_valido___0000000000000013Inseriscodati";
+        request = "0001M010";
+        request += argv[1];
+        request += "0000000000000013insericoidati";
         boost::asio::write(s, boost::asio::buffer(request.data(), request.length()));
 
         char reply[8192];

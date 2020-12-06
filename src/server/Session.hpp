@@ -39,6 +39,7 @@ class Session : public std::enable_shared_from_this<Session> {
     std::string currFilePath;
 
     UserCollection& users;
+    std::string currentUsername;
 
     // Legge l'header
     void readHeader();

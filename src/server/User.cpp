@@ -52,5 +52,5 @@ SessionId::SessionId() {
 
 bool SessionId::isExpired() {
     // dato che le stringhe sono informato posso confrontarle direttamente
-    return expiresAt.compare(to_iso_string(ptime(second_clock::universal_time()))) > 0;
+    return expiresAt.compare(to_iso_string(ptime(second_clock::universal_time()))) < 0;
 }

@@ -63,18 +63,21 @@ void Session::handleReadHeader(boost::system::error_code ec, std::size_t readLen
     //           sia corretta (me ne occupo adesso)
     if (header.getMessageCode() != Protocol::MessageCode::loginCredentials) {
         // controllo la sessionid
-        if (!users.isValidSessionId(header.getSessionId())) {
+        auto sid = users.getSessionId(header.getSessionId());
+        if (!sid.has_value()) {
             std::cerr << "Errore id sesssione non valido: " << header.getSessionId() << std::endl;
             // termino la connessione
-            replyError(Protocol::MessageCode::errorLogin, "");
+            replyError(Protocol::MessageCode::errorLogin);
             return;
+        } else {
+            currentUsername = sid.value().owner;
         }
-    }
 
-    std::cout << "Id sessione ok " << std::endl;
-    std::cout << "Leggo il body... " << std::endl;
-    body.setHeader(header);  // importante
-    readBody();
+        std::cout << "Id sessione ok " << std::endl;
+        std::cout << "Leggo il body... " << std::endl;
+        body.setHeader(header);  // importante
+        readBody();
+    }
 }
 
 void Session::readBody() {
@@ -127,7 +130,7 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
             // allora il pushWithFile mi avra' messo il filepath
             // dentro il primo body field
             if (!ofs.is_open()) {
-                currFilePath = "__ricevuti/" + body.getFields()[0];
+                currFilePath = getUserPath(body.getFields()[0]);
 
                 // creo le cartelle per ospitare il file
                 boost::filesystem::path p = currFilePath;
@@ -247,10 +250,9 @@ void Session::reset(bool readNext) {
 
     if (readNext) doRead();
 }
-std::string Session::getUserPath(std::string relPath) {
-    boost::filesystem::path rp(relPath);
-    boost::filesystem::path userFolder("__ricevuti/");
-    return (userFolder / rp).string();
+std::string Session::getUserPath(std::string sentPath) {
+    boost::filesystem::path sp("__ricevuti/" + currentUsername + "/" + sentPath);
+    return sp.string();
 }
 
 void Session::replyOk(std::string body) {
