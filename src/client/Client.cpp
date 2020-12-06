@@ -77,3 +77,7 @@ void Client::manageErrors(){
             std::cout << "Unknown error." << std::endl;
     }
 }
+
+std::string Client::getSessionId(){
+    return header.getSessionId();
+}

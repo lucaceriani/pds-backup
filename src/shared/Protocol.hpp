@@ -25,6 +25,8 @@ class Protocol {
     static const unsigned int bodyLenghtOffset;
     static const unsigned int messageCharOffset;
     static const unsigned int messageCodeOffset;
+    static const std::string sessionIdCharacters;
+    static const unsigned int sessionIdValidDays;
 
     enum class MessageCode {
         // client

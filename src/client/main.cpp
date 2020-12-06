@@ -10,10 +10,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
-#include <cstdlib>
-#include <cstring>
 #include <iostream>
-#include <fstream>
 
 
 #include "FileWatcher.hpp"
@@ -43,7 +40,7 @@ int main(int argc, char *argv[]) {
 
     PDSBackup::MessageBuilder mb;
     std::string message;
-    std::string sessionId = "000011112222333344445555"; //fake value of sessionId
+    std::string sessionId;
 
 
     Client c = Client(std::move(s));
@@ -59,6 +56,7 @@ int main(int argc, char *argv[]) {
         c.readHeader();
         if(c.getMessageCode() == PDSBackup::Protocol::MessageCode::ok){
             std::cout << "Login authorized." << std::endl;
+            sessionId = c.getSessionId();
             c.reset();
             break;
         }

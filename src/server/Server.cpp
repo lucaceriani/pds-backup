@@ -5,13 +5,21 @@
 #include <iostream>
 #include <memory>
 #include <string>
-
-#include "../shared/Exceptions.hpp"
+#include <vector>
 
 using namespace PDSBackup;
 
 Server::Server(boost::asio::io_context& io_context, short port)
     : acceptor(io_context, tcp::endpoint(tcp::v4(), port)) {
+    // apro la lista degli utenti
+
+    users.add({"gbkmZSAiIWSKnYDuuTcqcIqQ",
+               "20211205T145130",
+               "pippo",
+               // pass=luca
+               "sale",
+               "92523ace95131bacb5d7666914596be087007f25373500860629db99839d64ba"});
+
     doAccept();
 }
 
@@ -20,15 +28,8 @@ void Server::doAccept() {
         if (!ec) {
             std::cout << std::string(80, '-') << "\n";
             std::cout << "Nuova connessione da: " << socket.remote_endpoint().address().to_string() << std::endl;
-            // try {
-            std::make_shared<PDSBackup::Session>(std::move(socket))->doRead();
-            // } catch (const Exception::invalidTransmission& e) {
-            // socket.write_some("Trasmissione non valida");
-            // } catch (...) {
-            // }
+            std::make_shared<Session>(std::move(socket))->doRead();
         }
-
-        // per restare in attesa di un'altra connessione
         doAccept();
     });
 }

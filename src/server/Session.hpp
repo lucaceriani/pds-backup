@@ -9,9 +9,7 @@
 #include <vector>
 
 #include "../shared/_include.hpp"
-
-// per stampare i char come hex
-#define HEX(x) std::setw(2) << std::setfill('0') << std::hex << (((int)(x)) & 0xff)
+#include "User.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -51,6 +49,14 @@ class Session : public std::enable_shared_from_this<Session> {
 
     // Fa l'azione richiesta dal server (tranne salvare il file) e risponde
     void doTheStuffAndReply();
+
+    std::string getUserPath(std::string relPath);
+
+    // risponde OK
+    void replyOk(std::string body = "");
+
+    // risponde con un errore
+    void replyError(Protocol::MessageCode e, std::string body = "");
 
     // Imposta certi valori alle impostazioni iniziali
     void reset(bool readNext = true);

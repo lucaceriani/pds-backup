@@ -21,6 +21,7 @@ public:
     std::string printLen(std::vector<char> s);
     void reset();
     void manageErrors();
+    std::string getSessionId();
 private:
     boost::asio::ip::tcp::socket socket;
     std::vector<char> rawHeader;
