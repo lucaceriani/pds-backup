@@ -25,7 +25,7 @@ void FileWatcher::start(const std::function<void(std::string, FileStatus)> &acti
         auto it = paths_.begin();
         while (it != paths_.end()) {
             if (!boost::filesystem::exists(it->first)) {
-                if(std::get<1>(it->second).compare("directory") == 0){
+                if(std::get<1>(it->second) == "directory"){
                     action(it->first, FileStatus::directoryErased);
                     it = paths_.erase(it);
                 }else{
@@ -67,7 +67,7 @@ std::vector<std::string> FileWatcher::getPaths_(){
     std::vector<std::string> tmp;
     auto it = paths_.begin();
     while (it != paths_.end()) {
-        if(std::get<1>(it->second).compare("directory") != 0){
+        if(std::get<1>(it->second) == "directory"){
             tmp.push_back(it->first);
         }
     }

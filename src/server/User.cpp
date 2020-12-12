@@ -11,27 +11,21 @@
 using namespace PDSBackup;
 using namespace boost::posix_time;
 
-User::User() {
-}
-
-User::User(std::string sid, std::string expdate, std::string uname, std::string salt, std::string hpass) {
-    sessionId = sid;
-    expiresAt = from_iso_string(expdate);
-    userName = uname;
-    userHPassword = hpass;
-    userSalt = salt;
+User::User(std::string uname, std::string salt, std::string hpass)
+    : userName(uname), userHPassword(hpass), userSalt(salt) {
 }
 
 std::optional<SessionId> User::login(std::string user, std::string pass) {
     if (Checksum::sha3(pass + userSalt) == userHPassword) {
-        return generateSessionId();
+        return generateSessionId(user);
     } else {
         return std::nullopt;
     }
 }
 
-SessionId User::generateSessionId() {
+SessionId User::generateSessionId(std::string user) {
     SessionId sid;
+    sid.owner = user;
 
     // true randomness generator per sicurezza
     boost::random_device rd;
@@ -54,4 +48,9 @@ std::string User::getUserName() {
 
 SessionId::SessionId() {
     sessionId.reserve(Protocol::sessionIdLength);
+}
+
+bool SessionId::isExpired() {
+    // dato che le stringhe sono informato posso confrontarle direttamente
+    return expiresAt.compare(to_iso_string(ptime(second_clock::universal_time()))) < 0;
 }

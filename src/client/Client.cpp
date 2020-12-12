@@ -1,83 +1,191 @@
 #include "Client.hpp"
 
-Client::Client(tcp::socket s) : socket(std::move(s)){    // Costruttore
-    bodyReadSoFar = 0;
-    rawHeader.resize(PDSBackup::Protocol::headerLength);
+Client::Client(tcp::socket s, std::string dir) : socket(std::move(s)), dirToWatch(std::move(dir)){}
+
+void Client::startClient(){
+
+// Richiesta di login al server
+    Client::loginAsk();
+
+// Invio credenziali
+    Client::loginAuthentication();
+
+// FileWatcher
+    FileWatcher fw{dirToWatch, std::chrono::milliseconds(5000)}; // Crea e inizializza il FileWatcher
+
+// Fase di probe: si verifica che i file catalogati dal FileWatcher siano già presenti sul server, altrimenti si fa l'upload
+    std::vector<std::string> toBeChecked = fw.getPaths_();
+    auto it = toBeChecked.begin();
+    while(it != toBeChecked.end()){
+        fileProbe(*it);
+    }
+
+// Avvio del FileWatcher: inizia a monitorare i cambiamenti della cartella lato client
+
+    fw.start([this] (std::string path_to_watch, FileStatus status) -> void {
+
+        switch(status) {
+            case FileStatus::created: {
+                std::cout << "File created: " << path_to_watch << '\n';
+                // Upload di un nuovo file sul server
+                Client::fileUpload(path_to_watch, "New file upload done.");
+                break;
+            }
+            case FileStatus::modified:{
+                std::cout << "File modified: " << path_to_watch << '\n';
+                // Upload di un file modificato sul server (come upload dei nuovi file ma il server sovrascrive)
+                Client::fileUpload(path_to_watch, "Modified file upload done.");
+                break;
+            }
+            case FileStatus::erased: {
+                std::cout << "File erased: " << path_to_watch << '\n';
+                // Eliminazione di un file dal server
+                Client::fileDelete(path_to_watch);
+                break;
+            }
+            case FileStatus::directoryCreated:
+                std::cout << "Directory created: " << path_to_watch << '\n';
+                // Nessuna comunicazione col server in questo caso
+                break;
+            case FileStatus::directoryErased: {
+                std::cout << "Directory erased: " << path_to_watch << '\n';
+                // Eliminazione di un file dal server
+                Client::directoryDelete(path_to_watch);
+                break;
+            }
+            default:
+                std::cout << "Error! Unknown file status.\n";
+        }
+
+    });
 }
 
-void Client::readHeader() {
-            boost::asio::async_read(socket, boost::asio::buffer(rawHeader, PDSBackup::Protocol::headerLength),
 
-            [this](boost::system::error_code ec, std::size_t readLen) {
-                if (!ec) {
-                    std::cout << "Letto header: " << printLen(rawHeader) << std::endl;
-                    std::cout << "Lunghezza: " << readLen << std::endl;
-
-                    if (header.parse(rawHeader)) {
-                        std::cout << "Header corretto! " << std::endl;
-                        std::cout << "Leggo il body... " << std::endl;
-
-                        if(header.getBodyLenght() != 0) {  // I messaggi dal server hanno quasi tutti body vuoto (tranne 203 e 204)
-                            body.setHeader(header);
-                            Client::readBody();
-                        }
-
-                    } else {
-                        std::cout << "Header errato!" << std::endl;
-                    }
-                }
-            });
-}
-
-void Client::readBody() {
-    auto toRead = std::min((unsigned long long) PDSBackup::Protocol::bufferSize, header.getBodyLenght() - bodyReadSoFar);
-
-    std::cout << "Sto per leggere body con buffer = " << toRead << std::endl;
-
-    // Nei messaggi del server il massimo che si può trovare in un body è il path (203 e 204)
-    Client::path = Client::body.getFields().front();
-}
-
-PDSBackup::Protocol::MessageCode Client::getMessageCode(){
-    return header.getCode();
-}
-
-std::string Client::printLen(std::vector<char> s) {
-    return std::string(s.begin(), s.end());
-}
-
-void Client::reset(){
-    bodyReadSoFar = 0;
-
-    body.clear();
-    header.clear();
-}
-
-void Client::manageErrors(){
-    switch(header.getCode()){
-        case PDSBackup::Protocol::MessageCode::errorGeneric:
-            std::cout << "Generic error." << std::endl;
+void Client::loginAsk(){
+    while(true){
+        mb.setMessageCode(PDSBackup::Protocol::MessageCode::loginRequest);
+        message = mb.buildStr();
+        boost::asio::write(socket, boost::asio::buffer(message, message.length()));
+        // Controllo risposta server
+        getAndSetRawHeader();
+        if(cu.getMessageCode() == PDSBackup::Protocol::MessageCode::ok){
+            std::cout << "Login authorized." << std::endl;
+            cu.reset();
             break;
-        case PDSBackup::Protocol::MessageCode::errorLogin:
-            std::cout << "Login error." << std::endl;
-            break;
-        case PDSBackup::Protocol::MessageCode::errorFailedUpload:
-            std::cout << "Can not upload file." << std::endl;
-            break;
-        case PDSBackup::Protocol::MessageCode::errorFileNotFound:
-            std::cout << "File not found." << std::endl;
-            break;
-        case PDSBackup::Protocol::MessageCode::errorTransmission:
-            std::cout << "Transmission error." << std::endl;
-            break;
-        case PDSBackup::Protocol::MessageCode::errorProtocol:
-            std::cout << "Protocol error." << std::endl;
-            break;
-        default:
-            std::cout << "Unknown error." << std::endl;
+        }
+        cu.manageErrors();
+        cu.reset();
     }
 }
 
-std::string Client::getSessionId(){
-    return header.getSessionId();
+
+void Client::loginAuthentication(){
+    while(true){
+        std::string user;
+        std::string pwd;
+        std::cout << "Inserisci username: " << std::endl;
+        std::cin >> user;
+        std::cout << "Inserisci password: " << std::endl;
+        std::cin >> pwd;
+        mb.setMessageCode(PDSBackup::Protocol::MessageCode::loginCredentials);
+        mb.addField(user);
+        mb.addField(pwd);
+        message = mb.buildStr();
+        boost::asio::write(socket, boost::asio::buffer(message, message.length()));
+        // Controllo risposta server
+        getAndSetRawHeader();
+        if(cu.getMessageCode() == PDSBackup::Protocol::MessageCode::ok){
+            std::cout << "Login ok." << std::endl;
+            sessionId = cu.getSessionId();
+            cu.reset();
+            break;
+        }
+        cu.manageErrors();
+        cu.reset();
+    }
+}
+
+void Client::fileProbe(std::string fileToCheck){
+    mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileProbe);
+    mb.setSessionId(sessionId);
+    mb.addField(fileToCheck);
+    mb.addField(PDSBackup::Checksum::md5(fileToCheck));
+    message = mb.buildStr();
+    boost::asio::write(socket, boost::asio::buffer(message, message.length()));
+    // Controllo risposta server
+    getAndSetRawHeader();
+    if(cu.getMessageCode() != PDSBackup::Protocol::MessageCode::ok){
+        if(cu.getMessageCode() == PDSBackup::Protocol::MessageCode::errorFileNotFound){
+            std::cout << "File not found in server." << std::endl;
+            // Il file non è presente sul server, lo carico
+            Client::fileUpload(fileToCheck, "Missing file upload done.");
+        }else
+            cu.manageErrors();
+    }
+    cu.reset();
+}
+
+void Client::fileUpload(std::string fileToUpload, std::string messageToPrint){
+    // Upload di un nuovo file sul server
+    mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileUpload);
+    mb.setSessionId(sessionId);
+    mb.buildWithFile(fileToUpload, boost::filesystem::file_size(fileToUpload));
+    message = mb.buildStr();
+    boost::asio::write(socket, boost::asio::buffer(message, message.length()));
+    std::ifstream file;
+    file.open(fileToUpload, std::ios::binary);
+    char buff[8192];
+    while (file.read(buff, 8192)) {
+        boost::asio::write(socket, boost::asio::buffer(buff, file.gcount()));
+    }
+    file.close();
+    // Controllo risposta server
+    getAndSetRawHeader();
+    if(cu.getMessageCode() == PDSBackup::Protocol::MessageCode::ok)
+        std::cout << messageToPrint << std::endl;
+    else
+        cu.manageErrors();
+    cu.reset();
+}
+
+void Client::fileDelete(std::string fileToDelete){
+    // Eliminazione di un file dal server
+    mb.setMessageCode(PDSBackup::Protocol::MessageCode::fileDelete);
+    mb.setSessionId(sessionId);
+    mb.addField(fileToDelete);
+    message = mb.buildStr();
+    boost::asio::write(socket, boost::asio::buffer(message, message.length()));
+    // Controllo risposta server
+    getAndSetRawHeader();
+    if(cu.getMessageCode() == PDSBackup::Protocol::MessageCode::ok)
+        std::cout << "File correctly erased from the server." << std::endl;
+    else
+        cu.manageErrors();
+    cu.reset();
+}
+
+
+void Client::directoryDelete(std::string directoryToDelete){
+    // Eliminazione di una cartella dal server
+    mb.setMessageCode(PDSBackup::Protocol::MessageCode::folderDelete);
+    mb.setSessionId(sessionId);
+    mb.addField(directoryToDelete);
+    message = mb.buildStr();
+    boost::asio::write(socket, boost::asio::buffer(message, message.length()));
+    // Controllo risposta server
+    getAndSetRawHeader();
+    if(cu.getMessageCode() == PDSBackup::Protocol::MessageCode::ok)
+        std::cout << "Directory correctly erased from the server." << std::endl;
+    else
+        cu.manageErrors();
+    cu.reset();
+}
+
+void Client::getAndSetRawHeader(){
+    // Legge l'header di risposta del server e lo fa elaborare da ClientUtility
+    std::vector<char> rawHeader;
+    boost::system::error_code error;
+    size_t len = socket.read_some(boost::asio::buffer(rawHeader, PDSBackup::Protocol::headerLength), error);
+    std::cout << "Letto header di lunghezza: " << len << std::endl;
+    cu.readHeader(rawHeader);
 }

@@ -14,7 +14,8 @@
 
 using namespace PDSBackup;
 
-Session::Session(tcp::socket s) : socket(std::move(s)) {
+Session::Session(tcp::socket s, UserCollection& users)
+    : bodyReadSoFar(0), socket(std::move(s)), users(users) {
     // inizializzo i vettori
 
     rawHeader.resize(Protocol::headerLength);
@@ -22,31 +23,61 @@ Session::Session(tcp::socket s) : socket(std::move(s)) {
 }
 
 void Session::readHeader() {
-    auto self(shared_from_this());
-
     boost::asio::async_read(
         socket,
         boost::asio::buffer(rawHeader, Protocol::headerLength),
-        [this, self](boost::system::error_code ec, std::size_t readLen) {
-            if (!ec) {
-                std::cout << "Letto header: " << printLen(rawHeader, readLen) << std::endl;
-                std::cout << "Lunghezza: " << readLen << std::endl;
+        boost::bind(&Session::handleReadHeader,
+                    shared_from_this(),
+                    boost::asio::placeholders::error,
+                    boost::asio::placeholders::bytes_transferred));
+}
 
-                if (header.parse(rawHeader)) {
-                    std::cout << "Header corretto! " << std::endl;
-                    std::cout << "Leggo il body... " << std::endl;
+void Session::handleReadHeader(boost::system::error_code ec, std::size_t readLen) {
+    // se ho errori
+    // ho sempre errore se non ho letto tutto perche' faccio async_read
+    if (ec) {
+        std::cerr << "Errori nella lettura dell'header: " << ec.message() << std::endl;
+        replyError(Protocol::MessageCode::errorTransmission);
+        return;
+    }
 
-                    // importante
-                    body.setHeader(header);
+    std::cout << "Letto header: " << printLen(rawHeader, readLen) << std::endl;
+    std::cout << "Lunghezza: " << readLen << std::endl;
 
-                    // parto a leggere il body
-                    readBody();
-                } else {
-                    std::cout << "Header errato!" << std::endl;
-                    // TODO inviare errore appropriato per header errato
-                }
-            }
-        });
+    // provo a parsificare l'header
+    if (!header.parse(rawHeader)) {
+        std::cerr << "Errore nella parsificazione dell'header" << std::endl;
+        if (socket.is_open()) replyError(Protocol::MessageCode::errorTransmission);
+        return;
+    }
+
+    // se sono qui vuol dire che l'header e' corretto
+    // ed e' stato parsificato
+    std::cout << "Header corretto! " << std::endl;
+
+    // controllo login
+    std::cout << "Controllo utente" << std::endl;
+
+    // due casi: l'utente vuole effettuare un login (se ne occupa il body)
+    //   oppure  l'utente e' gia' loggato e possiede quindi un sessionId e voglio verificare che
+    //           sia corretta (me ne occupo adesso)
+    if (header.getMessageCode() != Protocol::MessageCode::loginCredentials) {
+        // controllo la sessionid
+        auto sid = users.getSessionId(header.getSessionId());
+        if (!sid.has_value()) {
+            std::cerr << "Errore id sesssione non valido: " << header.getSessionId() << std::endl;
+            // termino la connessione
+            replyError(Protocol::MessageCode::errorLogin);
+            return;
+        } else {
+            currentUsername = sid.value().owner;
+        }
+
+        std::cout << "Id sessione ok " << std::endl;
+        std::cout << "Leggo il body... " << std::endl;
+        body.setHeader(header);  // importante
+        readBody();
+    }
 }
 
 void Session::readBody() {
@@ -99,7 +130,7 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
             // allora il pushWithFile mi avra' messo il filepath
             // dentro il primo body field
             if (!ofs.is_open()) {
-                currFilePath = "__ricevuti/" + body.getFields()[0];
+                currFilePath = getUserPath(body.getFields()[0]);
 
                 // creo le cartelle per ospitare il file
                 boost::filesystem::path p = currFilePath;
@@ -133,12 +164,9 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
 
         if (isLastChunk) {
             body.parse();
-            // TODO eseguire l'azione associata al messaggio
 
             auto fields = body.getFields();
-
             for (auto x : fields) std::cout << "Letto field: " << x << std::endl;
-
             std::cout << "Letto tutto il messaggio!" << std::endl;
 
             doTheStuffAndReply();
@@ -210,6 +238,8 @@ std::string Session::printLen(std::vector<char> s, unsigned long long len) {
 }
 
 void Session::reset(bool readNext) {
+    std::cout << "Reset sessione" << std::endl;
+
     bodyReadSoFar = 0;
     currFilePath.clear();
 
@@ -220,10 +250,9 @@ void Session::reset(bool readNext) {
 
     if (readNext) doRead();
 }
-std::string Session::getUserPath(std::string relPath) {
-    boost::filesystem::path rp(relPath);
-    boost::filesystem::path userFolder("__ricevuti/");
-    return (userFolder / rp).string();
+std::string Session::getUserPath(std::string sentPath) {
+    boost::filesystem::path sp("__ricevuti/" + currentUsername + "/" + sentPath);
+    return sp.string();
 }
 
 void Session::replyOk(std::string body) {
@@ -237,5 +266,12 @@ void Session::replyError(Protocol::MessageCode e, std::string body) {
     std::cout << "Rispondo "
               << (e == Protocol::MessageCode::ok ? "OK" : "ERROR")
               << " con body: '" << body << "'" << std::endl;
-    boost::asio::write(socket, boost::asio::buffer(msg.buildStr()));
+    try {
+        boost::asio::write(socket, boost::asio::buffer(msg.buildStr()));
+    } catch (...) {
+        std::cerr << "Errore impossibile scrivere sul socket" << std::endl;
+        return;
+    }
+
+    std::cout << "Risposta inviata correttamente" << std::endl;
 }

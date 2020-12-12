@@ -15,14 +15,14 @@ class UserCollection {
     void add(User user, bool isAtomic = true);
 
     std::optional<std::string> login(std::string name, std::string pass, bool isAtomic = true);
+    std::optional<SessionId> getSessionId(std::string sid, bool isAtomic = true);
 
    private:
     std::mutex m;
-    std::unordered_map<std::string, std::string> sidByName;
+    std::unordered_map<std::string, SessionId> sessionIdMap;
     std::unordered_map<std::string, User> userByName;
 
     std::optional<User> getUserByName(std::string uname, bool isAtomic = true);
-    std::optional<std::string> getSidByName(std::string uname, bool isAtomic = true);
 };
 
 }  // namespace PDSBackup
