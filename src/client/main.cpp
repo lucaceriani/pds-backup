@@ -19,6 +19,7 @@ int main(int argc, char *argv[]) {
         boost::asio::connect(s, resolver.resolve(argv[1], argv[2]));
 
         Client c = Client(std::move(s), argv[3]);
+        c.startClient();
 
     } catch (std::exception &e) {
         std::cerr << "Exception: " << e.what() << "\n";
