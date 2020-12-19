@@ -1,11 +1,12 @@
-#ifndef PDS_BACKUP_SERVER_SERVER
-#define PDS_BACKUP_SERVER_SERVER
+#pragma once
 
 #include <boost/asio.hpp>
+#include <iostream>
 #include <memory>
 #include <string>
 
 #include "Session.hpp"
+#include "UserCollection.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -14,6 +15,7 @@ namespace PDSBackup {
 class Server {
    public:
     Server(boost::asio::io_context &io_context, short port);
+    UserCollection users;
 
    private:
     tcp::acceptor acceptor;
@@ -22,5 +24,3 @@ class Server {
     void doAccept();
 };
 }  // namespace PDSBackup
-
-#endif

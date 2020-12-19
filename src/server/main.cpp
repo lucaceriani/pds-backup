@@ -15,25 +15,21 @@
 #include <string>
 #include <utility>
 
+#include "../shared/Exceptions.hpp"
 #include "Server.hpp"
 
 using boost::asio::ip::tcp;
 
-
 int main(int argc, char *argv[]) {
     try {
-        if (argc != 2) {
-            std::cerr << "Usage: async_tcp_echo_server <port>\n";
-            return 1;
-        }
-
         boost::asio::io_context io_context;
-        PDSBackup::Server s(io_context, std::atoi(argv[1]));
+        PDSBackup::Server s(io_context, 1234);
+        std::cout << "Server sulla porta: 1234" << std::endl;
         io_context.run();
-    }
-
-    catch (std::exception &e) {
+    } catch (std::exception &e) {
         std::cerr << "Exception: " << e.what() << "\n";
+    } catch (PDSBackup::BaseException &e) {
+        std::cerr << "Errore server: " << e.what() << "\n";
     }
 
     return 0;

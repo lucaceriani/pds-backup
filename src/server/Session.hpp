@@ -1,5 +1,4 @@
-#ifndef PDS_BACKUP_SERVER_SESSION
-#define PDS_BACKUP_SERVER_SESSION
+#pragma once
 
 #include <boost/asio.hpp>
 #include <fstream>
@@ -7,11 +6,10 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "../shared/protocol.hpp"
-
-// per stampare i char come hex
-#define HEX(x) std::setw(2) << std::setfill('0') << std::hex << (((int)(x)) & 0xff)
+#include "../shared/_include.hpp"
+#include "UserCollection.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -19,39 +17,56 @@ namespace PDSBackup {
 
 class Session : public std::enable_shared_from_this<Session> {
    public:
-    Session(tcp::socket s) : socket(std::move(s)) {}
+    Session(tcp::socket s, UserCollection& users);
 
-    // Metodo da hciamare per cominciare la lettura
+    // Metodo da chiamare per cominciare la lettura
     void doRead();
 
-    // Ritorna l'header come stringa
-    std::string stringHeader();
+    ~Session() {
+        std::cout << "Fine sessione\n" + std::string(80, '-') << std::endl;
+    }
 
    private:
-    char header[PDSB_PROT_HEADERLEN];
-    char strBufBody[8192];
-    unsigned long long bodyLen;
-    std::string userCode;
+    Header header;
+    Body body;
+
+    std::vector<char> rawHeader;
+    std::vector<char> bodyBuffer;
+    unsigned long long bodyReadSoFar;
+
     tcp::socket socket;
     std::ofstream ofs;
+    std::string currFilePath;
+
+    UserCollection& users;
+    std::string currentUsername;
 
     // Legge l'header
     void readHeader();
+    void handleReadHeader(boost::system::error_code ec, std::size_t readLen);
 
     // Legge il body
-    void readBody(unsigned long long lenght);
+    void readBody();
 
     // Si occupa di leggere il body finché non ha finito
-    // TODO: controllo della lunghezza del body!
     void handleReadBody(boost::system::error_code ec, std::size_t readLen);
 
-    // Funzione chiamata dopo aver letto correttamente l'header
-    unsigned long long checkHeader(std::size_t lenght);
+    // Fa l'azione richiesta dal server (tranne salvare il file) e risponde
+    void doTheStuffAndReply();
+
+    std::string getUserPath(std::string relPath);
+
+    // risponde OK
+    void replyOk(std::string body = "");
+
+    // risponde con un errore
+    void replyError(Protocol::MessageCode e, std::string body = "");
+
+    // Imposta certi valori alle impostazioni iniziali
+    void reset(bool readNext = true);
 
     // funzione che stampa un certo numero di caratteri
-    std::string printLen(char* s, unsigned long long len);
+    std::string printLen(std::vector<char> s, unsigned long long len);
 };
 
 }  // namespace PDSBackup
-
-#endif
