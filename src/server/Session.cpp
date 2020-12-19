@@ -55,13 +55,14 @@ void Session::handleReadHeader(boost::system::error_code ec, std::size_t readLen
     // ed e' stato parsificato
     std::cout << "Header corretto! " << std::endl;
 
-    // controllo login
-    std::cout << "Controllo utente" << std::endl;
-
     // due casi: l'utente vuole effettuare un login (se ne occupa il body)
     //   oppure  l'utente e' gia' loggato e possiede quindi un sessionId e voglio verificare che
     //           sia corretta (me ne occupo adesso)
-    if (header.getMessageCode() != Protocol::MessageCode::loginCredentials) {
+    if (!(header.getMessageCode() == Protocol::MessageCode::loginCredentials ||
+          header.getMessageCode() == Protocol::MessageCode::loginRequest)) {
+        // controllo login
+        std::cout << "Controllo utente" << std::endl;
+
         // controllo la sessionid
         auto sid = users.getSessionId(header.getSessionId());
         if (!sid.has_value()) {
@@ -76,7 +77,13 @@ void Session::handleReadHeader(boost::system::error_code ec, std::size_t readLen
         std::cout << "Id sessione ok " << std::endl;
         std::cout << "Leggo il body... " << std::endl;
         body.setHeader(header);  // importante
+    }
+
+    if (header.getBodyLenght() > 0) {
         readBody();
+    } else {
+        doTheStuffAndReply();
+        reset();
     }
 }
 
@@ -190,11 +197,18 @@ void Session::doTheStuffAndReply() {
     MC mc = header.getMessageCode();
 
     if (mc == MC::loginRequest) {
+        std::cout << "Eseguo: loginRequest" << std::endl;
         // pass
         replyOk();
 
     } else if (mc == MC::loginCredentials) {
-        // pass
+        std::cout << "Eseguo: loginCreadentials" << std::endl;
+        auto sid = users.login(body.getFields()[0], body.getFields()[1]);
+        if (sid.has_value()) {
+            replyOk(sid.value());
+        } else {
+            replyError(MC::errorLogin);
+        }
 
     } else if (mc == MC::fileProbe) {
         std::string sentPath = body.getFields()[0];

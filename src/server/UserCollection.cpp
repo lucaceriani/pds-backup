@@ -15,7 +15,10 @@ std::optional<std::string> UserCollection::login(std::string username, std::stri
         if (optSid.has_value()) {
             // TODO magari fare il controllo sulle sid duplicate
 
+            // salvo nella mappa stringaSid -> objSid
             sessionIdMap[optSid.value().sessionId] = optSid.value();
+
+            //ritorno la stringa
             return optSid.value().sessionId;
         }
     }

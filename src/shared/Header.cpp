@@ -46,7 +46,7 @@ bool Header::parse(std::vector<char> rawHeader) {
     }
 
     try {
-        messageCode = (Protocol::MessageCode)std::stoi(messageCodeStr);
+        messageCode = static_cast<Protocol::MessageCode>(std::stoi(messageCodeStr));
     } catch (const std::exception& e) {
         // se fallisco la conversione
         std::cerr << e.what() << std::endl;
@@ -89,6 +89,6 @@ void Header::clear() {
     bodyLenght = 0;
 }
 
-Protocol::MessageCode Header::getCode(){
+Protocol::MessageCode Header::getCode() {
     return messageCode;
 }
