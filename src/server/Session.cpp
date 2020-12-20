@@ -74,14 +74,15 @@ void Session::handleReadHeader(boost::system::error_code ec, std::size_t readLen
             currentUsername = sid.value().owner;
         }
 
-        std::cout << "Id sessione ok " << std::endl;
-        std::cout << "Leggo il body... " << std::endl;
-        body.setHeader(header);  // importante
+        std::cout << "Id sessione ok:  " << sid.value().sessionId << std::endl;
     }
 
     if (header.getBodyLenght() > 0) {
+        std::cout << "Leggo il body... " << std::endl;
+        body.setHeader(header);  // importante
         readBody();
     } else {
+        std::cout << "Body vuoto, procedo..." << std::endl;
         doTheStuffAndReply();
         reset();
     }
