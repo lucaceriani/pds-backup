@@ -56,8 +56,8 @@ class Session : public std::enable_shared_from_this<Session> {
 
     std::string getUserPath(std::string relPath);
 
-    // risponde OK
-    void replyOk(std::string body = "");
+    // risponde OK, nel caso in cui ho fatto il login ho un sessionId
+    void replyOk(std::string sessionId = "");
 
     // risponde con un errore
     void replyError(Protocol::MessageCode e, std::string body = "");

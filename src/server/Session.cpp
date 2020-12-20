@@ -270,8 +270,21 @@ std::string Session::getUserPath(std::string sentPath) {
     return sp.string();
 }
 
-void Session::replyOk(std::string body) {
-    replyError(Protocol::MessageCode::ok, body);
+void Session::replyOk(std::string sessionId) {
+    MessageBuilder msg;
+    msg.setMessageCode(Protocol::MessageCode::ok);
+    if (sessionId.length() > 0) msg.setSessionId(sessionId);
+    std::cout << "Rispondo OK"
+              << (sessionId.length() > 0 ? ", login con SID: " + sessionId : "")
+              << std::endl;
+
+    try {
+        boost::asio::write(socket, boost::asio::buffer(msg.buildStr()));
+    } catch (...) {
+        std::cerr << "Errore impossibile scrivere sul socket" << std::endl;
+        return;
+    }
+    std::cout << "Risposta inviata correttamente" << std::endl;
 }
 
 void Session::replyError(Protocol::MessageCode e, std::string body) {
