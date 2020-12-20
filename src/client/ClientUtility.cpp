@@ -37,25 +37,25 @@ void ClientUtility::reset(){
 void ClientUtility::manageErrors(){
     switch(header.getCode()){
         case PDSBackup::Protocol::MessageCode::errorGeneric:
-            std::cout << "Generic error." << std::endl;
+            std::cout << "Errore generico server." << std::endl;
             break;
         case PDSBackup::Protocol::MessageCode::errorLogin:
-            std::cout << "Login error." << std::endl;
+            std::cout << "Errore di login." << std::endl;
             break;
         case PDSBackup::Protocol::MessageCode::errorFailedUpload:
-            std::cout << "Can not upload file." << std::endl;
+            std::cout << "Impossibile caricare il file." << std::endl;
             break;
         case PDSBackup::Protocol::MessageCode::errorFileNotFound:
-            std::cout << "File not found." << std::endl;
+            std::cout << "File non presente." << std::endl;
             break;
         case PDSBackup::Protocol::MessageCode::errorTransmission:
-            std::cout << "Transmission error." << std::endl;
+            std::cout << "Errore di trasmissione." << std::endl;
             break;
         case PDSBackup::Protocol::MessageCode::errorProtocol:
-            std::cout << "Protocol error." << std::endl;
+            std::cout << "Errore di protocollo." << std::endl;
             break;
         default:
-            std::cout << "Unknown error." << std::endl;
+            std::cout << "Errore sconosciuto." << std::endl;
     }
 }
 

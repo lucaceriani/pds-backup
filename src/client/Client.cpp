@@ -26,35 +26,35 @@ void Client::startClient(){
 
         switch(status) {
             case FileStatus::created: {
-                std::cout << "File created: " << path_to_watch << '\n';
+                std::cout << "File creato sul client: " << path_to_watch << '\n';
                 // Upload di un nuovo file sul server
-                Client::fileUpload(path_to_watch, "New file upload done.");
+                Client::fileUpload(path_to_watch, "Upload del nuovo file completato.");
                 break;
             }
             case FileStatus::modified:{
-                std::cout << "File modified: " << path_to_watch << '\n';
+                std::cout << "File modificato sul client: " << path_to_watch << '\n';
                 // Upload di un file modificato sul server (come upload dei nuovi file ma il server sovrascrive)
-                Client::fileUpload(path_to_watch, "Modified file upload done.");
+                Client::fileUpload(path_to_watch, "Upload del file modificato completato.");
                 break;
             }
             case FileStatus::erased: {
-                std::cout << "File erased: " << path_to_watch << '\n';
+                std::cout << "File eliminato dal client: " << path_to_watch << '\n';
                 // Eliminazione di un file dal server
                 Client::fileDelete(path_to_watch);
                 break;
             }
             case FileStatus::directoryCreated:
-                std::cout << "Directory created: " << path_to_watch << '\n';
+                std::cout << "Directory creata sul client: " << path_to_watch << '\n';
                 // Nessuna comunicazione col server in questo caso
                 break;
             case FileStatus::directoryErased: {
-                std::cout << "Directory erased: " << path_to_watch << '\n';
+                std::cout << "Directory eliminata dal client: " << path_to_watch << '\n';
                 // Eliminazione di un file dal server
                 Client::directoryDelete(path_to_watch);
                 break;
             }
             default:
-                std::cout << "Error! Unknown file status.\n";
+                std::cout << "Errore! File status sconosciuto.\n";
         }
 
     });
@@ -69,7 +69,7 @@ void Client::loginAsk(){
         // Controllo risposta server
         getAndSetRawHeader();
         if(cu.getMessageCode() == PDSBackup::Protocol::MessageCode::ok){
-            std::cout << "Login authorized." << std::endl;
+            std::cout << "Login autorizzato." << std::endl;
             cu.reset();
             break;
         }
@@ -116,9 +116,9 @@ void Client::fileProbe(std::string fileToCheck){
     getAndSetRawHeader();
     if(cu.getMessageCode() != PDSBackup::Protocol::MessageCode::ok){
         if(cu.getMessageCode() == PDSBackup::Protocol::MessageCode::errorFileNotFound){
-            std::cout << "File not found in server." << std::endl;
+            std::cout << "File non trovato nel server." << std::endl;
             // Il file non è presente sul server, lo carico
-            Client::fileUpload(fileToCheck, "Missing file upload done.");
+            Client::fileUpload(fileToCheck, "Upload del file mancante completato.");
         }else
             cu.manageErrors();
     }
@@ -158,7 +158,7 @@ void Client::fileDelete(std::string fileToDelete){
     // Controllo risposta server
     getAndSetRawHeader();
     if(cu.getMessageCode() == PDSBackup::Protocol::MessageCode::ok)
-        std::cout << "File correctly erased from the server." << std::endl;
+        std::cout << "File eliminato correttamente dal server." << std::endl;
     else
         cu.manageErrors();
     cu.reset();
@@ -175,7 +175,7 @@ void Client::directoryDelete(std::string directoryToDelete){
     // Controllo risposta server
     getAndSetRawHeader();
     if(cu.getMessageCode() == PDSBackup::Protocol::MessageCode::ok)
-        std::cout << "Directory correctly erased from the server." << std::endl;
+        std::cout << "Directory elimiata correttamente dal server." << std::endl;
     else
         cu.manageErrors();
     cu.reset();
@@ -183,9 +183,10 @@ void Client::directoryDelete(std::string directoryToDelete){
 
 void Client::getAndSetRawHeader(){
     // Legge l'header di risposta del server e lo fa elaborare da ClientUtility
-    std::vector<char> rawHeader;
+    std::vector<char> rawHeader(PDSBackup::Protocol::headerLength);
     boost::system::error_code error;
-    size_t len = socket.read_some(boost::asio::buffer(rawHeader, PDSBackup::Protocol::headerLength), error);
+    size_t len = boost::asio::read(socket, boost::asio::buffer(rawHeader), error);
+    std::cout << std::string(rawHeader.begin(), rawHeader.end()) << std::endl;
     std::cout << "Letto header di lunghezza: " << len << std::endl;
     cu.readHeader(rawHeader);
 }
