@@ -67,7 +67,7 @@ std::vector<std::string> FileWatcher::getPaths_(){
     std::vector<std::string> tmp;
     auto it = paths_.begin();
     while (it != paths_.end()) {
-        if(std::get<1>(it->second) == "directory"){
+        if(std::get<1>(it->second) == "file"){
             tmp.push_back(it->first);
         }
     }

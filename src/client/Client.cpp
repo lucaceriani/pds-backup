@@ -17,6 +17,7 @@ void Client::startClient(){
     std::vector<std::string> toBeChecked = fw.getPaths_();
     auto it = toBeChecked.begin();
     while(it != toBeChecked.end()){
+        std::cout << *it <<std::endl;
         fileProbe(*it);
     }
 
@@ -97,7 +98,6 @@ void Client::loginAuthentication(){
         if(cu.getMessageCode() == PDSBackup::Protocol::MessageCode::ok){
             std::cout << "Login ok." << std::endl;
             sessionId = cu.getSessionId();
-            std::cout << sessionId <<std::endl;
             cu.reset();
             mb.clearFields();
             break;
@@ -126,6 +126,7 @@ void Client::fileProbe(std::string fileToCheck){
             cu.manageErrors();
     }
     cu.reset();
+    mb.clearFields();
 }
 
 void Client::fileUpload(std::string fileToUpload, std::string messageToPrint){
@@ -149,6 +150,7 @@ void Client::fileUpload(std::string fileToUpload, std::string messageToPrint){
     else
         cu.manageErrors();
     cu.reset();
+    mb.clearFields();
 }
 
 void Client::fileDelete(std::string fileToDelete){
@@ -165,6 +167,7 @@ void Client::fileDelete(std::string fileToDelete){
     else
         cu.manageErrors();
     cu.reset();
+    mb.clearFields();
 }
 
 
@@ -182,6 +185,7 @@ void Client::directoryDelete(std::string directoryToDelete){
     else
         cu.manageErrors();
     cu.reset();
+    mb.clearFields();
 }
 
 void Client::getAndSetRawHeader(){
