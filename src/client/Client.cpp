@@ -97,11 +97,14 @@ void Client::loginAuthentication(){
         if(cu.getMessageCode() == PDSBackup::Protocol::MessageCode::ok){
             std::cout << "Login ok." << std::endl;
             sessionId = cu.getSessionId();
+            std::cout << sessionId <<std::endl;
             cu.reset();
+            mb.clearFields();
             break;
         }
         cu.manageErrors();
         cu.reset();
+        mb.clearFields();
     }
 }
 
@@ -188,5 +191,8 @@ void Client::getAndSetRawHeader(){
     size_t len = boost::asio::read(socket, boost::asio::buffer(rawHeader), error);
     std::cout << std::string(rawHeader.begin(), rawHeader.end()) << std::endl;
     std::cout << "Letto header di lunghezza: " << len << std::endl;
-    cu.readHeader(rawHeader);
+    if(len != 0)
+        cu.readHeader(rawHeader);
+    else
+        std::cout << "Header nullo!" << std::endl;
 }

@@ -22,6 +22,9 @@ class MessageBuilder {
     std::vector<char> build();
     std::string buildStr();
 
+    // azzera i fields
+    void clearFields();
+
    private:
     std::vector<std::string> fields;
     std::string sid;

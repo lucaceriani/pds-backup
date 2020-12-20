@@ -17,6 +17,9 @@ void ClientUtility::readHeader(std::vector<char> rawHeader) {
 }
 
 void ClientUtility::readBody() {
+    /*
+    std::vector<std::string> bodyFields = body.getFields();
+     */
     // Nei messaggi del server il massimo che si può trovare in un body è il path (203 e 204)
     path = body.getFields().front();
 }

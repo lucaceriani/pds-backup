@@ -63,3 +63,8 @@ std::string MessageBuilder::buildStr() {
 
     return msg.str();
 }
+
+void MessageBuilder::clearFields(){
+    fields.clear();
+    bodyLength = 0;
+}
