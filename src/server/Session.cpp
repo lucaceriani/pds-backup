@@ -214,8 +214,13 @@ void Session::doTheStuffAndReply() {
     } else if (mc == MC::fileProbe) {
         std::string sentPath = body.getFields()[0];
         std::string sentChecksum = body.getFields()[1];
-
-        std::string myChecksum = Checksum::md5(getUserPath(sentPath));
+        std::string myChecksum;
+        try {
+            myChecksum = Checksum::md5(getUserPath(sentPath));
+        } catch (...) {
+            replyError(MC::errorFileNotFound, sentPath);
+            return;
+        }
 
         if (myChecksum == sentChecksum) {
             replyOk();
