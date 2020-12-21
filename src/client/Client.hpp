@@ -1,27 +1,26 @@
 #pragma once
 
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <fstream>
-#include <vector>
 #include <boost/asio.hpp>
 #include <boost/filesystem.hpp>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <vector>
 
-#include "FileWatcher.hpp"
-#include "ClientUtility.hpp"
 #include "../shared/_include.hpp"
+#include "ClientUtility.hpp"
+#include "FileWatcher.hpp"
 
 using boost::asio::ip::tcp;
 
-class Client{
-public:
+class Client {
+   public:
     Client(tcp::socket s, std::string dir);
     void startClient();
 
-private:
+   private:
     tcp::socket socket;
-    PDSBackup::MessageBuilder mb;
     std::string message;
     std::string sessionId;
     std::string dirToWatch;
