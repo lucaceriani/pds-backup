@@ -27,9 +27,9 @@ std::string Checksum::md5(std::string filePath) {
     do {
         fs.read(buf, buffSize);
         MD5_Update(&ctx, buf, fs.gcount());
-    } while (!fs.eof() || fs.fail());
+    } while (!fs.eof() && !fs.fail());
 
-    if (fs.fail()) throw std::runtime_error("Impossibile leggere il file");
+    if (fs.fail() && !fs.eof()) throw std::runtime_error("Impossibile leggere il file");
 
     fs.close();
 
