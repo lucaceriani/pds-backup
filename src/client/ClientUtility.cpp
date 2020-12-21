@@ -1,6 +1,6 @@
 #include "ClientUtility.hpp"
 
-ClientUtility::ClientUtility(){} // Costruttore
+ClientUtility::ClientUtility() {}  // Costruttore
 
 void ClientUtility::readHeader(std::vector<char> rawHeader) {
     if (header.parse(rawHeader)) {
@@ -17,6 +17,9 @@ void ClientUtility::readHeader(std::vector<char> rawHeader) {
 }
 
 void ClientUtility::readBody() {
+    // FIXME
+    // TODO da fixare la lettura del body
+
     /*
     std::vector<std::string> bodyFields = body.getFields();
      */
@@ -24,7 +27,7 @@ void ClientUtility::readBody() {
     path = body.getFields().front();
 }
 
-PDSBackup::Protocol::MessageCode ClientUtility::getMessageCode(){
+PDSBackup::Protocol::MessageCode ClientUtility::getMessageCode() {
     return header.getCode();
 }
 
@@ -32,13 +35,13 @@ std::string ClientUtility::printLen(std::vector<char> s) {
     return std::string(s.begin(), s.end());
 }
 
-void ClientUtility::reset(){
+void ClientUtility::reset() {
     body.clear();
     header.clear();
 }
 
-void ClientUtility::manageErrors(){
-    switch(header.getCode()){
+void ClientUtility::manageErrors() {
+    switch (header.getCode()) {
         case PDSBackup::Protocol::MessageCode::errorGeneric:
             std::cout << "Errore generico server." << std::endl;
             break;
@@ -62,6 +65,6 @@ void ClientUtility::manageErrors(){
     }
 }
 
-std::string ClientUtility::getSessionId(){
+std::string ClientUtility::getSessionId() {
     return header.getSessionId();
 }
