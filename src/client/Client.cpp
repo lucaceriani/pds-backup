@@ -126,6 +126,7 @@ void Client::fileProbe(std::string fileToCheck) {
         if (cu.getMessageCode() == PDSBackup::Protocol::MessageCode::errorFileNotFound) {
             std::cout << "File non trovato nel server." << std::endl;
             // Il file non è presente sul server, lo carico
+            cu.reset();
             Client::fileUpload(fileToCheck, "Upload del file mancante completato.");
         } else {
             cu.manageErrors();
@@ -201,13 +202,28 @@ void Client::directoryDelete(std::string directoryToDelete) {
 
 void Client::getAndSetRawHeader() {
     // Legge l'header di risposta del server e lo fa elaborare da ClientUtility
+    unsigned long long res = 0; // assumo inizialmente che non ci sia il body
     std::vector<char> rawHeader(PDSBackup::Protocol::headerLength);
     boost::system::error_code error;
     size_t len = boost::asio::read(socket, boost::asio::buffer(rawHeader), error);
     std::cout << std::string(rawHeader.begin(), rawHeader.end()) << std::endl;
     std::cout << "Letto header di lunghezza: " << len << std::endl;
     if (len != 0)
-        cu.readHeader(rawHeader);
+        res = cu.readHeader(rawHeader);
     else
         std::cout << "Header nullo!" << std::endl;
+    if (res != 0)
+        getAndSetRawBody(res);
+}
+
+void Client::getAndSetRawBody(unsigned long long bodyLen) {
+    std::vector<char> rawBody(bodyLen);
+    boost::system::error_code error;
+    size_t len = boost::asio::read(socket, boost::asio::buffer(rawBody), error);
+    std::cout << "Percorso file contenuto nel body: " << std::string(rawBody.begin(), rawBody.end()) << std::endl;
+    std::cout << "Letto body di lunghezza: " << len << std::endl;
+    if(len != 0)
+        cu.readBody(rawBody);
+    else
+        std::cout << "Body nullo!" << std::endl;
 }

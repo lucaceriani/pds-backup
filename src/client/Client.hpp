@@ -33,4 +33,5 @@ class Client {
     void fileDelete(std::string fileToDelete);
     void directoryDelete(std::string directoryToDelete);
     void getAndSetRawHeader();
+    void getAndSetRawBody(unsigned long long bodyLen);
 };

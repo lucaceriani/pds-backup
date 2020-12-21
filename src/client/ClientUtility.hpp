@@ -15,8 +15,8 @@ using boost::asio::ip::tcp;
 class ClientUtility{
 public:
     ClientUtility();
-    void readHeader(std::vector<char> rawHeader);
-    void readBody();
+    unsigned long long readHeader(std::vector<char> rawHeader);
+    void readBody(std::vector<char> rawBody);
     PDSBackup::Protocol::MessageCode getMessageCode();
     std::string printLen(std::vector<char> s);
     void reset();
