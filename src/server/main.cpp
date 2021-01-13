@@ -9,6 +9,7 @@
 //
 
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -19,6 +20,9 @@
 #include "Server.hpp"
 
 using boost::asio::ip::tcp;
+namespace ssl = boost::asio::ssl;
+
+typedef ssl::stream<tcp::socket> ssl_socket;
 
 int main(int argc, char *argv[]) {
     try {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -9,6 +10,7 @@
 #include "UserCollection.hpp"
 
 using boost::asio::ip::tcp;
+namespace ssl = boost::asio::ssl;
 
 namespace PDSBackup {
 
@@ -19,6 +21,7 @@ class Server {
 
    private:
     tcp::acceptor acceptor;
+    ssl::context sslCtx;
 
     // Accetta la connessione e la assegna ad un oggetto Session
     void doAccept();

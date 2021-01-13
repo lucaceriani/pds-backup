@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -17,10 +18,10 @@ namespace PDSBackup {
 
 class Session : public std::enable_shared_from_this<Session> {
    public:
-    Session(tcp::socket s, UserCollection& users);
+    Session(boost::asio::ssl::stream<tcp::socket> s, UserCollection& users);
 
-    // Metodo da chiamare per cominciare la lettura
-    void doRead();
+    // fa l'handshake SSL
+    void start();
 
     ~Session() {
         std::cout << "Fine sessione\n" + std::string(80, '-') << std::endl;
@@ -34,12 +35,15 @@ class Session : public std::enable_shared_from_this<Session> {
     std::vector<char> bodyBuffer;
     unsigned long long bodyReadSoFar;
 
-    tcp::socket socket;
+    boost::asio::ssl::stream<tcp::socket> socket;
     std::ofstream ofs;
     std::string currFilePath;
 
     UserCollection& users;
     std::string currentUsername;
+
+    // Metodo da chiamare per cominciare la lettura
+    void doRead();
 
     // Legge l'header
     void readHeader();

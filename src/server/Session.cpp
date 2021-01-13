@@ -14,12 +14,26 @@
 
 using namespace PDSBackup;
 
-Session::Session(tcp::socket s, UserCollection& users)
+Session::Session(boost::asio::ssl::stream<tcp::socket> s, UserCollection& users)
     : bodyReadSoFar(0), socket(std::move(s)), users(users) {
     // inizializzo i vettori
 
     rawHeader.resize(Protocol::headerLength);
     bodyBuffer.resize(Protocol::bufferSize);
+}
+
+void Session::start() {
+    auto self(shared_from_this());
+    socket.async_handshake(
+        boost::asio::ssl::stream_base::server,
+        [this, self](const boost::system::error_code& ec) {
+            if (!ec) {
+                std::cout << "Handshake SSL completato!" << std::endl;
+                doRead();
+            } else {
+                std::cout << "Errore nell'handshake SSL" << std::endl;
+            }
+        });
 }
 
 void Session::readHeader() {
@@ -47,7 +61,7 @@ void Session::handleReadHeader(boost::system::error_code ec, std::size_t readLen
     // provo a parsificare l'header
     if (!header.parse(rawHeader)) {
         std::cerr << "Errore nella parsificazione dell'header" << std::endl;
-        if (socket.is_open()) replyError(Protocol::MessageCode::errorTransmission);
+        if (socket.lowest_layer().is_open()) replyError(Protocol::MessageCode::errorTransmission);
         return;
     }
 
