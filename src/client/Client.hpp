@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 #include <boost/filesystem.hpp>
 #include <cstdlib>
 #include <cstring>
@@ -12,15 +13,17 @@
 #include "ClientUtility.hpp"
 #include "FileWatcher.hpp"
 
+
 using boost::asio::ip::tcp;
+namespace ssl = boost::asio::ssl;
 
 class Client {
    public:
-    Client(tcp::socket s, std::string dir);
+    Client(ssl::stream<tcp::socket> s, std::string dir);
     void startClient();
 
    private:
-    tcp::socket socket;
+    ssl::stream<tcp::socket> socket;
     std::string message;
     std::string sessionId;
     std::string dirToWatch;

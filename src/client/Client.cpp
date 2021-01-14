@@ -1,6 +1,6 @@
 #include "Client.hpp"
 
-Client::Client(tcp::socket s, std::string dir) : socket(std::move(s)), dirToWatch(std::move(dir)) {}
+Client::Client(ssl::stream<tcp::socket> s, std::string dir) : socket(std::move(s)), dirToWatch(std::move(dir)) {}
 
 void Client::startClient() {
     // Richiesta di login al server
@@ -19,11 +19,6 @@ void Client::startClient() {
         std::cout << f << std::endl;
         fileProbe(f);
     }
-
-    // auto it = toBeChecked.begin();
-    // while (it != toBeChecked.end()) {
-    //     std::cout << *it << std::endl;
-    // }
 
     // Avvio del FileWatcher: inizia a monitorare i cambiamenti della cartella lato client
 
