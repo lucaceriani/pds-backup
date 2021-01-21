@@ -71,6 +71,7 @@ void Client::loginAsk() {
             cu.reset();
             break;
         }
+        mb.clearFields();
         cu.manageErrors();
         cu.reset();
     }
@@ -96,9 +97,9 @@ void Client::loginAuthentication() {
             std::cout << "Login ok." << std::endl;
             sessionId = cu.getSessionId();
             cu.reset();
-
             break;
         }
+        mb.clearFields();
         cu.manageErrors();
         cu.reset();
     }
