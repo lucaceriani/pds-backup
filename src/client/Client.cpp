@@ -77,8 +77,8 @@ void Client::loginAsk() {
 }
 
 void Client::loginAuthentication() {
-    PDSBackup::MessageBuilder mb;
     while (true) {
+        PDSBackup::MessageBuilder mb;
         std::string user;
         std::string pwd;
         std::cout << "Inserisci username: " << std::endl;
@@ -197,7 +197,7 @@ void Client::directoryDelete(std::string directoryToDelete) {
 
 void Client::getAndSetRawHeader() {
     // Legge l'header di risposta del server e lo fa elaborare da ClientUtility
-    unsigned long long res = 0; // assumo inizialmente che non ci sia il body
+    unsigned long long res = 0;  // assumo inizialmente che non ci sia il body
     std::vector<char> rawHeader(PDSBackup::Protocol::headerLength);
     boost::system::error_code error;
     size_t len = boost::asio::read(socket, boost::asio::buffer(rawHeader), error);
@@ -217,7 +217,7 @@ void Client::getAndSetRawBody(unsigned long long bodyLen) {
     size_t len = boost::asio::read(socket, boost::asio::buffer(rawBody), error);
     std::cout << "Percorso file contenuto nel body: " << std::string(rawBody.begin(), rawBody.end()) << std::endl;
     std::cout << "Letto body di lunghezza: " << len << std::endl;
-    if(len != 0)
+    if (len != 0)
         cu.readBody(rawBody);
     else
         std::cout << "Body nullo!" << std::endl;
