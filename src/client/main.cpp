@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
     } catch (std::exception &e) {
         std::cerr << "Exception: " << e.what() << "\n";
     } catch (PDSBackup::BaseException &e) {
-         std::cerr << "Errore server: " << e.what() << "\n";
+        std::cerr << "Errore server: " << e.what() << "\n";
     }
     return 0;
 }
