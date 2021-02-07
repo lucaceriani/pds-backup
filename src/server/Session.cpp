@@ -105,7 +105,7 @@ void Session::handleReadHeader(boost::system::error_code ec, std::size_t readLen
 void Session::readBody() {
     auto toRead = std::min((unsigned long long)Protocol::bufferSize, header.getBodyLenght() - bodyReadSoFar);
 
-    std::cout << "Sto per leggere body con buffer = " << toRead << std::endl;
+    // std::cout << "Sto per leggere body con buffer = " << toRead << "\n";  //std::endl;
 
     socket.async_read_some(
         boost::asio::buffer(bodyBuffer, toRead),
@@ -117,7 +117,7 @@ void Session::readBody() {
 }
 
 void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) {
-    std::cout << "Ho letto body con buffer = " << readLen << std::endl;
+    // std::cout << "Ho letto body con buffer = " << readLen << std::endl;
 
     bool isLastChunk = false;
     // controllo se ho degli errori che non sono EOF
@@ -146,7 +146,7 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
     if (bodyReadSoFar == header.getBodyLenght()) isLastChunk = true;
 
     if (header.isFileUpload()) {
-        std::cout << "handleReadBody() con file, con readLen = " << readLen << std::endl;
+        // std::cout << "handleReadBody() con file, con readLen = " << readLen << std::endl;
 
         std::size_t pos = body.pushWithFile(bodyBuffer, readLen);
 
@@ -305,6 +305,7 @@ void Session::replyOk(std::string sessionId) {
         boost::asio::write(socket, boost::asio::buffer(msg.buildStr()));
     } catch (...) {
         std::cerr << "Errore impossibile scrivere sul socket" << std::endl;
+        reset();
         return;
     }
     std::cout << "Risposta inviata correttamente" << std::endl;

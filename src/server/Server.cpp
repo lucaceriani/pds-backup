@@ -2,6 +2,7 @@
 #include "Server.hpp"
 
 #include <boost/asio.hpp>
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -13,12 +14,7 @@ Server::Server(boost::asio::io_context& io_context, short port)
     : acceptor(io_context, tcp::endpoint(tcp::v4(), port)),
       sslCtx(ssl::context::tlsv13) {
     // apro la lista degli utenti
-    users.add(
-        {"pippo",
-         // pass=luca
-         "sale",
-         "92523ace95131bacb5d7666914596be087007f25373500860629db99839d64ba"},
-        false);
+    loadUsers();
 
     sslCtx.set_options(
         boost::asio::ssl::context::default_workarounds |
@@ -46,4 +42,18 @@ void Server::doAccept() {
         }
         doAccept();
     });
+}
+
+void Server::loadUsers() {
+    std::ifstream ifs;
+    std::string user, salt, hash;
+    ifs.open("pdsbackup.users");
+
+    if (ifs.bad()) return;
+
+    while (ifs >> user >> salt >> hash) {
+        // creo implicitamente un oggetto User
+        std::cout << "Caricato utente: " << user << std::endl;
+        users.add({user, salt, hash}, false);
+    }
 }

@@ -144,10 +144,10 @@ void Client::fileUpload(std::string fileToUpload, std::string messageToPrint) {
 
     std::ifstream file;
     file.open(fileToUpload, std::ios::binary);
-    char buff[8192];
+    char buff[PDSBackup::Protocol::bufferSize];
 
     do {
-        file.read(buff, 8192);
+        file.read(buff, PDSBackup::Protocol::bufferSize);
         boost::asio::write(socket, boost::asio::buffer(buff, file.gcount()));
     } while (!file.eof());
 
