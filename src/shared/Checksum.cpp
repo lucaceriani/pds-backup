@@ -36,8 +36,6 @@ std::string Checksum::md5(std::string filePath) {
     unsigned char md[MD5_DIGEST_LENGTH];
     MD5_Final(md, &ctx);
 
-    // BUG no free md5
-
     return toHex(md, MD5_DIGEST_LENGTH);
 }
 

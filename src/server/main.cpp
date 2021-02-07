@@ -22,18 +22,18 @@
 using boost::asio::ip::tcp;
 namespace ssl = boost::asio::ssl;
 
-typedef ssl::stream<tcp::socket> ssl_socket;
-
 int main(int argc, char *argv[]) {
-    try {
-        boost::asio::io_context io_context;
-        PDSBackup::Server s(io_context, 1234);
-        std::cout << "Server sulla porta: 1234" << std::endl;
-        io_context.run();
-    } catch (std::exception &e) {
-        std::cerr << "Exception: " << e.what() << "\n";
-    } catch (PDSBackup::BaseException &e) {
-        std::cerr << "Errore server: " << e.what() << "\n";
+    while (true) {
+        try {
+            boost::asio::io_context io_context;
+            PDSBackup::Server s(io_context, 1234);
+            std::cout << "Server sulla porta: 1234" << std::endl;
+            io_context.run();
+        } catch (std::exception &e) {
+            std::cerr << "Exception: " << e.what() << "\n";
+        } catch (PDSBackup::BaseException &e) {
+            std::cerr << "Errore server: " << e.what() << "\n";
+        }
     }
 
     return 0;

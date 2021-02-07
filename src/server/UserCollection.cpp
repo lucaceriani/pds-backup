@@ -10,11 +10,9 @@ std::optional<std::string> UserCollection::login(std::string username, std::stri
     auto optUser = getUserByName(username);
     if (optUser.has_value()) {
         // se ho trovasto l'utente provo a fare il login
-        User user = optUser.value();
-        auto optSid = user.login(username, pass);
+        auto optSid = optUser.value().login(username, pass);
         if (optSid.has_value()) {
-            // TODO magari fare il controllo sulle sid duplicate
-
+            // statisticamente e' molto improbabile che si generino due sid uguali
             // salvo nella mappa stringaSid -> objSid
             sessionIdMap[optSid.value().sessionId] = optSid.value();
 
@@ -45,13 +43,6 @@ void UserCollection::add(User user, bool isAtomic) {
 
 std::optional<SessionId> UserCollection::getSessionId(std::string sid, bool isAtomic) {
     if (isAtomic) std::lock_guard _(m);
-
-    // FIXME delete this
-    if (sid == "________sempre_valido___") {
-        SessionId s;
-        s.owner = "testUser";
-        return s;
-    }
 
     auto found = sessionIdMap.find(sid);
 

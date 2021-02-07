@@ -25,5 +25,7 @@ class Server {
 
     // Accetta la connessione e la assegna ad un oggetto Session
     void doAccept();
+
+    void loadUsers();
 };
 }  // namespace PDSBackup
