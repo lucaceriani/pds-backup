@@ -53,6 +53,7 @@ class invalidProtocol : public BaseException {
     const char* what();
     Protocol::MessageCode messageCode();
 };
+
 }  // namespace Exception
 
 }  // namespace PDSBackup

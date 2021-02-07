@@ -52,7 +52,7 @@ void FileWatcher::start(const std::function<void(std::string, FileStatus)> &acti
                     action(file.path().string(), FileStatus::created);
                 }
             } else {
-                // File modificato (al momento se modifico con editor grafici tutto ok, se uso "nano" da terminale da un po' di problemi, crea un file .swp) ;
+                // File modificato;
                 if (std::get<0>(paths_[file.path().string()]) != current_file_last_write_time && !boost::filesystem::is_directory(file.path())) {  //faccio in modo che venga aggiornato il tempo dell' istante di modifica solo nel caso di modifica dei file ;
                     paths_[file.path().string()] = std::make_tuple(current_file_last_write_time, "file");
                     action(file.path().string(), FileStatus::modified);
@@ -64,7 +64,6 @@ void FileWatcher::start(const std::function<void(std::string, FileStatus)> &acti
 
 std::vector<std::string> FileWatcher::getPaths_() {
     std::vector<std::string> tmp;
-
     for (auto it = paths_.begin(); it != paths_.end(); it++) {
         if (std::get<1>(it->second) == "file") {
             tmp.push_back(it->first);

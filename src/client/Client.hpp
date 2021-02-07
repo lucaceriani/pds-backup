@@ -8,10 +8,12 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <ctime>
 
 #include "../shared/_include.hpp"
 #include "ClientUtility.hpp"
 #include "FileWatcher.hpp"
+#include "ClientExceptions.hpp"
 
 
 using boost::asio::ip::tcp;
@@ -19,7 +21,7 @@ namespace ssl = boost::asio::ssl;
 
 class Client {
    public:
-    Client(ssl::stream<tcp::socket> s, std::string dir);
+    Client(boost::asio::io_context& io_context, boost::asio::ssl::context& context, boost::asio::ip::tcp::resolver::query que, std::string dir);
     void startClient();
 
    private:
@@ -28,6 +30,13 @@ class Client {
     std::string sessionId;
     std::string dirToWatch;
     ClientUtility cu;
+    std::string userMem;
+    std::string pwdMem;
+    int loginAcceptedFlag = 0;
+    int hiddenLoginFlag = 0;
+    boost::asio::ip::tcp::resolver::query query;
+    bool alreadyStarted = false;
+    bool restartDone = false;
 
     void loginAsk();
     void loginAuthentication();
@@ -37,4 +46,8 @@ class Client {
     void directoryDelete(std::string directoryToDelete);
     void getAndSetRawHeader();
     void getAndSetRawBody(unsigned long long bodyLen);
+    void handshake();
+    void connect();
+    void waitAndReconnect();
+    void restartClientAfterFail();
 };

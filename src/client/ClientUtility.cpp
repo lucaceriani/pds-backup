@@ -1,16 +1,15 @@
 #include "ClientUtility.hpp"
 
-ClientUtility::ClientUtility() {}  // Costruttore
+ClientUtility::ClientUtility() {}
 
 unsigned long long ClientUtility::readHeader(std::vector<char> rawHeader) {
-    if (header.parse(rawHeader)) {
+    if (header.parse(rawHeader)){
         std::cout << "Header corretto! " << std::endl;
-
         if (header.getBodyLenght() != 0) {  // I messaggi dal server hanno quasi tutti body vuoto (tranne 203 e 204)
             std::cout << "Leggo il body... " << std::endl;
             body.setHeader(header);
         }
-    } else {
+    }else{
         std::cout << "Header errato!" << std::endl;
     }
     return header.getBodyLenght();
@@ -41,25 +40,21 @@ void ClientUtility::reset() {
 void ClientUtility::manageErrors() {
     switch (header.getCode()) {
         case PDSBackup::Protocol::MessageCode::errorGeneric:
-            std::cout << "Errore generico server." << std::endl;
-            break;
+            throw PDSBackup::Exception::generic();
         case PDSBackup::Protocol::MessageCode::errorLogin:
-            std::cout << "Errore di login." << std::endl;
+            std::cout << "Errore di login, riprova." << std::endl;
             break;
         case PDSBackup::Protocol::MessageCode::errorFailedUpload:
-            std::cout << "Impossibile caricare il file: " << path << std::endl;
-            break;
+            throw PDSBackup::Exception::invalidFileUpload();
         case PDSBackup::Protocol::MessageCode::errorFileNotFound:
-            std::cout << "File non presente." << std::endl;
+            std::cout << "File non presente / file di dimensione 0b eliminato correttamente." << std::endl;
             break;
         case PDSBackup::Protocol::MessageCode::errorTransmission:
-            std::cout << "Errore di trasmissione." << std::endl;
-            break;
+            throw PDSBackup::Exception::invalidTransmission();
         case PDSBackup::Protocol::MessageCode::errorProtocol:
-            std::cout << "Errore di protocollo." << std::endl;
-            break;
+            throw PDSBackup::Exception::invalidProtocol();
         default:
-            std::cout << "Errore sconosciuto." << std::endl;
+            throw std::string("Errore sconosciuto");
     }
 }
 
