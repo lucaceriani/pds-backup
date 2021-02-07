@@ -125,12 +125,16 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
     // se ho EOF ma non ho finito di leggere il body
     if ((ec && ec != boost::asio::error::eof) ||
         (ec == boost::asio::error::eof && bodyReadSoFar + readLen != header.getBodyLenght())) {
+        // se avevo un file aperto lo chiudo e lo cancello
         if (ofs.is_open() && currFilePath.length() > 0) {
             ofs.close();
             boost::filesystem::remove(currFilePath);
-            std::cout << "Errore ec: " << ec.message() << std::endl;
-            return;
         }
+
+        // segnalo l'errore e ritorno
+        std::cout << "Errore ec: " << ec.message() << std::endl;
+        reset();
+        return;
     }
 
     // se arrivo qui vuol dire che o mi manca da leggere altro body o tutto quello
@@ -160,12 +164,15 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
                 boost::filesystem::create_directories(p);
 
                 ofs.open(currFilePath, std::ios::binary);
-                // se ho dei problemi con l'apertura del file
-                // FIXME da riveredere, nessuno prende questa eccezione
-                if (!ofs) throw Exception::invalidFileUpload();
             };
 
             ofs.write(bodyBuffer.data() + pos, readLen - pos);
+
+            // se ho dei problemi con il file rispondo con errore
+            if (ofs.bad()) {
+                replyError(Protocol::MessageCode::errorFailedUpload);
+                reset();
+            }
         }
 
         // se sono alla fine
@@ -181,7 +188,9 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
             // continuo a leggere
             readBody();
         };
-    } else {
+
+    } else {  // se non ho un file upload, ma solo dei messaggi
+
         body.push(bodyBuffer, readLen);
 
         if (isLastChunk) {
@@ -192,11 +201,8 @@ void Session::handleReadBody(boost::system::error_code ec, std::size_t readLen) 
             std::cout << "Letto tutto il messaggio!" << std::endl;
 
             doTheStuffAndReply();
-
-            // reset della sessione
             reset();
-        } else {
-            // leggo altro body
+        } else {  // se non e' l'ultimo chunk
             readBody();
         }
     }
@@ -213,7 +219,6 @@ void Session::doTheStuffAndReply() {
 
     if (mc == MC::loginRequest) {
         std::cout << "Eseguo: loginRequest" << std::endl;
-        // pass
         replyOk();
 
     } else if (mc == MC::loginCredentials) {
@@ -243,8 +248,7 @@ void Session::doTheStuffAndReply() {
         }
 
     } else if (mc == MC::fileUpload) {
-        // pass
-        // se siamo qui in teoria il file e' stato caricato correttamente
+        // se siamo qui il file e' stato caricato correttamente
         replyOk();
 
     } else if (mc == MC::fileDelete) {

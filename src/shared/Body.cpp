@@ -61,13 +61,13 @@ bool Body::push(std::vector<char> buffer, std::size_t readLen) {
     return true;
 }
 
-bool Body::parse() {
-    //controlli di base
-    if (!header.isValid()) throw;
-    // if (header.isFileUpload()) parseWithBody(bodyBuffStorage);
+void Body::parse() {
+    // se chiamo body.parse() senza che l'header sia a posto, c'e' un errore grave
+    if (!header.isValid()) throw std::runtime_error("Chiamata a Body.parse() con header invalido");
 
     int lastPos = 0;
 
+    // for per cercale la/le posizioni dei \0 all'interno del messaggio del body
     for (size_t i = 0; i < bodyBuffStorage.size(); i++) {
         if (bodyBuffStorage[i] == '\0') {
             fields.push_back(std::string(bodyBuffStorage.data() + lastPos, bodyBuffStorage.data() + i));
@@ -78,14 +78,6 @@ bool Body::parse() {
     // inserico l'ultimo campo (o anche l'unico) che non ha '\0' in fondo
     fields.push_back(std::string(bodyBuffStorage.data() + lastPos,
                                  bodyBuffStorage.data() + bodyBuffStorage.size()));
-
-    // TODO da modificare il return di Body::parse()
-    return true;
-}
-
-bool Body::parseWithBody(std::vector<char> buffer) {
-    // TODO parseWithBody
-    return true;
 }
 
 std::vector<std::string> Body::getFields() {
