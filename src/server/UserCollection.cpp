@@ -5,7 +5,7 @@
 using namespace PDSBackup;
 
 std::optional<std::string> UserCollection::login(std::string username, std::string pass, bool isAtomic) {
-    if (isAtomic) std::lock_guard _(m);
+    if (isAtomic) std::unique_lock _(sm);
 
     auto optUser = getUserByName(username);
     if (optUser.has_value()) {
@@ -25,7 +25,7 @@ std::optional<std::string> UserCollection::login(std::string username, std::stri
 }
 
 std::optional<User> UserCollection::getUserByName(std::string uname, bool isAtomic) {
-    if (isAtomic) std::lock_guard _(m);
+    if (isAtomic) std::shared_lock _(sm);
 
     auto user = userByName.find(uname);
     if (user == userByName.end()) {
@@ -36,13 +36,13 @@ std::optional<User> UserCollection::getUserByName(std::string uname, bool isAtom
 }
 
 void UserCollection::add(User user, bool isAtomic) {
-    if (isAtomic) std::lock_guard _(m);
+    if (isAtomic) std::unique_lock _(sm);
 
     userByName[user.getUserName()] = user;
 }
 
 std::optional<SessionId> UserCollection::getSessionId(std::string sid, bool isAtomic) {
-    if (isAtomic) std::lock_guard _(m);
+    if (isAtomic) std::shared_lock _(sm);
 
     auto found = sessionIdMap.find(sid);
 

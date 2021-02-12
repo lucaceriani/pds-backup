@@ -49,11 +49,15 @@ void Server::loadUsers() {
     std::string user, salt, hash;
     ifs.open("pdsbackup.users");
 
-    if (ifs.bad()) return;
+    if (ifs.bad()) {
+        ifs.close();
+        return;
+    }
 
     while (ifs >> user >> salt >> hash) {
-        // creo implicitamente un oggetto User
         std::cout << "Caricato utente: " << user << std::endl;
+
+        // oggetto utente implicito
         users.add({user, salt, hash}, false);
     }
 }

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <map>
-#include <mutex>
 #include <optional>
+#include <shared_mutex>
 #include <unordered_map>
 #include <vector>
 
@@ -18,7 +18,7 @@ class UserCollection {
     std::optional<SessionId> getSessionId(std::string sid, bool isAtomic = true);
 
    private:
-    std::mutex m;
+    std::shared_mutex sm;
     std::unordered_map<std::string, SessionId> sessionIdMap;
     std::unordered_map<std::string, User> userByName;
 
