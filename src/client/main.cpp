@@ -11,11 +11,11 @@ int main(int argc, char *argv[]) {
 
     try {
         if (argc != 4) {
-            std::cerr << "Usage: blocking_tcp_echo_client <host> <port>\n";
+            std::cerr << "Errore nel numero di argomenti: <host> <port> <directory>\n";
             return 1;
         }
 
-        // Inizializzazione
+        // Inizializzazione io_context e ssl_context e creazione del Client
         boost::asio::io_context io_context;
         ssl::context ssl_context(ssl::context::tlsv13);
         Client c = Client(io_context, ssl_context, {argv[1], argv[2]}, argv[3]);
@@ -37,5 +37,5 @@ int main(int argc, char *argv[]) {
         return 3; // 3 = codice per terminazione causa eccezione di std::exception
     }
 
-    return 0; // 0 = codice per terminazione normale del client
+    return 0; // 0 = codice per terminazione corretta del client
 }

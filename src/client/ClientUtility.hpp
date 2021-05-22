@@ -13,6 +13,7 @@
 using boost::asio::ip::tcp;
 
 class ClientUtility{
+
 public:
     ClientUtility();
     unsigned long long readHeader(std::vector<char> rawHeader);
@@ -22,6 +23,7 @@ public:
     void reset();
     void manageErrors();
     std::string getSessionId();
+
 private:
     PDSBackup::Header header;
     PDSBackup::Body body;

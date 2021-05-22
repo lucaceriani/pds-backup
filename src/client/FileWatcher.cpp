@@ -7,6 +7,8 @@
 #include <tuple>
 #include <unordered_map>
 
+// Costruttore: inizializza le strutture dati opportune per il funzionamento del FileWatcher.
+
 FileWatcher::FileWatcher(std::string path_to_watch, std::chrono::duration<int, std::milli> delay) : path_to_watch{path_to_watch}, delay{delay} {
     for (auto &file : boost::filesystem::recursive_directory_iterator(boost::filesystem::path(path_to_watch))) {
         if (boost::filesystem::is_directory(file.path()))
@@ -15,6 +17,9 @@ FileWatcher::FileWatcher(std::string path_to_watch, std::chrono::duration<int, s
             paths_[file.path().string()] = std::make_tuple(boost::filesystem::last_write_time(file), "file");
     }
 }
+
+// Funzione che avvia il FileWatcher ed esegue un controllo su creazione/modifica/eliminazione di file e cartelle
+// con cadenza regolare, seguendo un intervallo di tempo specifico.
 
 void FileWatcher::start(const std::function<void(std::string, FileStatus)> &action) {
     while (running_) {
@@ -62,6 +67,8 @@ void FileWatcher::start(const std::function<void(std::string, FileStatus)> &acti
     }
 }
 
+// Funzione che fa da getter per i file che sono salvati al momento nella struttura dati "paths_" (unordered map).
+
 std::vector<std::string> FileWatcher::getPaths_() {
     std::vector<std::string> tmp;
     for (auto it = paths_.begin(); it != paths_.end(); it++) {
@@ -71,6 +78,8 @@ std::vector<std::string> FileWatcher::getPaths_() {
     }
     return tmp;
 }
+
+// Funzione che controlla se un file è contenuto in "paths_" o meno e restituisce un valore booleano.
 
 bool FileWatcher::contains(const std::string &key) {
     auto el = paths_.find(key);

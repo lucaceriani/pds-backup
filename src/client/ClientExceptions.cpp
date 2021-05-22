@@ -2,6 +2,8 @@
 
 using namespace ClientExc;
 
+// Eccezioni specifiche per il client
+
 const char* timeout::what() { return "Tentativo di riconnessione fallito per 10 minuti, il client termina."; }
 errorCode timeout::errorCode() { return errorCode::timeoutExpiredClientEnd; }
 

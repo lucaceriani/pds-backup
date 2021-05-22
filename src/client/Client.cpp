@@ -1,5 +1,7 @@
 #include "Client.hpp"
 
+// Costruttore del Client: riceve come parametri i context, una query contenente indirizzo e porta dell'host e la directory da monitorare.
+
 Client::Client(boost::asio::io_context& io_context,
                boost::asio::ssl::context& ssl_context,
                boost::asio::ip::tcp::resolver::query que,
@@ -7,6 +9,8 @@ Client::Client(boost::asio::io_context& io_context,
     dirToWatch = std::move(dir);
     connect();
 }
+
+// Funzione che avvia il Client (richiede login, lo effettua, crea e inizializza il Filewatcher, effettua il probe di file e cartelle).
 
 void Client::startClient() {
     // Richiesta di login al server
@@ -84,6 +88,8 @@ void Client::startClient() {
     });
 }
 
+// Funzione che si occupa della richiesta di login al server.
+
 void Client::loginAsk() {
     PDSBackup::MessageBuilder mb;
     while (true) {
@@ -115,6 +121,8 @@ void Client::loginAsk() {
         cu.reset();
     }
 }
+
+// Funzione che si occupa di richiedere all' utente e inviare al server le credenziali per il login.
 
 void Client::loginAuthentication() {
     PDSBackup::MessageBuilder mb;
@@ -165,6 +173,8 @@ void Client::loginAuthentication() {
     }
 }
 
+// Funzione che esegue il probe del file che riceve come parametro: se il file non si trova sul server effettua l' upload.
+
 void Client::fileProbe(std::string fileToCheck) {
     std::cout << "Faccio il probe di: " << fileToCheck << std::endl;
     PDSBackup::MessageBuilder mb;
@@ -200,6 +210,8 @@ void Client::fileProbe(std::string fileToCheck) {
     }
     cu.reset();
 }
+
+// Funzione che si occupa di fare l' upload sul server del file che riceve come primo parametro e stampare il messaggio specificato nel secondo parametro.
 
 void Client::fileUpload(std::string fileToUpload, std::string messageToPrint) {
     // Upload di un nuovo file sul server
@@ -244,6 +256,8 @@ void Client::fileUpload(std::string fileToUpload, std::string messageToPrint) {
     cu.reset();
 }
 
+// Funzione che si occupa di eliminare dal server il file che riceve come parametro (che quindi è stato eliminato dal client).
+
 void Client::fileDelete(std::string fileToDelete) {
     // Eliminazione di un file dal server
     PDSBackup::MessageBuilder mb;
@@ -272,6 +286,8 @@ void Client::fileDelete(std::string fileToDelete) {
         cu.manageErrors();
     cu.reset();
 }
+
+// Funzione che si occupa di eliminare dal server la directory che riceve come parametro (che quindi è stato eliminata dal client).
 
 void Client::directoryDelete(std::string directoryToDelete) {
     // Eliminazione di una cartella dal server
@@ -302,6 +318,8 @@ void Client::directoryDelete(std::string directoryToDelete) {
     cu.reset();
 }
 
+// Funzione che ottiene l'header raw dei messaggi ricevuti dal server e lo manda in elaborazione.
+
 void Client::getAndSetRawHeader() {
     // Legge l'header di risposta del server e lo fa elaborare da ClientUtility
     unsigned long long res; // assumo inizialmente che non ci sia il body
@@ -322,6 +340,8 @@ void Client::getAndSetRawHeader() {
 
 }
 
+// Funzione che ottiene il body raw dei messaggi ricevuti dal server e lo manda in elaborazione.
+
 void Client::getAndSetRawBody(unsigned long long bodyLen) {
     std::vector<char> rawBody(bodyLen);
     boost::system::error_code error;
@@ -336,6 +356,9 @@ void Client::getAndSetRawBody(unsigned long long bodyLen) {
     }
 }
 
+// Funzione che tenta di avviare in modo asincrono una connessione con il server
+// e in caso di successo avvia la procedura di handshake, altrimenti restituisce un messaggio di errore.
+
 void Client::connect(){
     boost::asio::io_context& io_context = static_cast<boost::asio::io_context&>(socket.get_executor().context());
     tcp::resolver r (io_context);
@@ -349,6 +372,10 @@ void Client::connect(){
                                    }
                                });
 }
+
+// Funzione che esegue l'handshake asincrono tra client e server e se la procedura ha successo avvia il client,
+// altrimenti restituisce un messaggio di fallimento. La funzione è utilizzata sia alla prima connessione, sia in caso
+// sia necessario recuperare la connessione con il server dopo un'interruzione.
 
 void Client::handshake(){
     socket.async_handshake(boost::asio::ssl::stream_base::client,
@@ -367,6 +394,9 @@ void Client::handshake(){
                             });
 }
 
+// Funzione che si occupa di effettuare un numero specifico di tentativi di riconnessione al server dopo che la precedente connessione
+// si è interrotta. In caso non riesca a riconnetersi entro un tempo limite, lancia un' eccezione che porterà alla terminazione del programma.
+
 void Client::waitAndReconnect(){
     // Salvo l' orario in cui mi accorgo che il server è down
     time_t currentTime;
@@ -384,8 +414,8 @@ void Client::waitAndReconnect(){
             waitingFlag = false;
         if(attemptCounter == 600){
             std::cout << "Tempo limite superato, non è riuscita la riconnessione." << std::endl;
-            // Prima di terminare stampo l' orario a cui il server ha terminato di funzionare
-            // in modo da permettere all' utente di verificare se il suo backup è completo considerando l' orario fino a cui
+            // Prima di terminare stampo l'orario a cui il server ha terminato di funzionare
+            // in modo da permettere all'utente di verificare se il suo backup è completo considerando l'orario fino a cui
             // il server ha funzionato regolarmente.
             std::cout << "Problema di connessione rilevato il: " << asctime(localtime(&currentTime));
             std::cout << "Eventuali modifiche della directory successive alla data e ora indicate non sono state salvate sul server." << std::endl;
@@ -395,6 +425,9 @@ void Client::waitAndReconnect(){
     std::cout << "Riconnessione con il server effettuata, riprendo il monitoraggio." << std::endl;
     return;
 }
+
+// Funzione che si occupa di far ripartire il client se avviene una riconnessione: effettua un login "nascosto" senza richiedere
+// le credenziali nuovamente (sfrutta quelle inserite precedentemente).
 
 void Client::restartClientAfterFail(){
     // Richiesta di login al server
