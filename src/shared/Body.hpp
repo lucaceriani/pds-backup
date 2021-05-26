@@ -11,7 +11,6 @@ namespace PDSBackup {
 class Body {
    public:
     Body();
-    bool needsToSaveFile();
     void setHeader(Header header);
     bool push(std::vector<char> buffer, std::size_t readLen);
     std::size_t pushWithFile(std::vector<char> buffer, std::size_t readLen);
@@ -26,6 +25,5 @@ class Body {
     std::vector<std::string> fields;
     std::vector<char> bodyBuffStorage;
 
-    bool parseWithBody(std::vector<char> buffer);
 };
 }  // namespace PDSBackup

@@ -19,7 +19,6 @@ class MessageBuilder {
     void buildWithFile(std::string path, std::size_t fileSize);
 
     // crea la stringa da inviare
-    std::vector<char> build();
     std::string buildStr();
 
     // azzera i fields
