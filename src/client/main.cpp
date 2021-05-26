@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
         time_t currentTime;
         time(&currentTime);
         std::cout << "Problema del server rilevato il: " << asctime(localtime(&currentTime));
-        std::cout << "Il server termina." << std::endl;
+        std::cout << "Il client termina." << std::endl;
         std::cout << "Eventuali modifiche della directory successive alla data e ora indicate non sono state salvate sul server." << std::endl;
         return 2; // 2 = codice per terminazione causa eccezioni PDSBackup (eccezioni server)
     }catch (std::exception &e) {

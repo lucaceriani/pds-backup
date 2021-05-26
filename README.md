@@ -22,9 +22,6 @@ Come avviene l'**autenticazione** del client?
 Come si deve comportare il software in una condizione di **cold start**, ovvero quando i file all'interno della cartella da monitorare sono stati modificati senza che l'applicazione fosse in esecuzione?
 > All'avvio, il programma effettuerà **una scansione completa di tutti i file** e, per ognuno di questi, contorllerà che sia già presenta sul server, in caso contrario verrà effettuato un upload. Questo caso è **equiparabile all'avvio del programma per la prima volta** e selezionando come cartella da sincronizzare una cartella non vuota.
 
-Come si gestisce la **struttura dei file** in memoria?
-> Si implementa in modo identico tra client e server, mediante una libreria condivisa.
-
 Chi è la **SOOT**?
 > Il **client** è la Single Source Of Truth in quanto è lui che si occupa di sapere quali file sono sincronizzati e di effettuarne l'upload in caso non lo siano .
 
